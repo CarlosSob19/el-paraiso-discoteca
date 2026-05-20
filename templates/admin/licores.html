@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Licores — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">Licores</h1>
+            <a href="{{ url_for('crear_licor') }}" class="btn-primary" style="width: auto; padding: 12px 24px;">+ Nuevo licor</a>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in licores %}
+                    <tr>
+                        <td><img src="{{ l.imagen }}" alt="" class="admin-thumb"></td>
+                        <td><strong style="color: var(--text-primary);">{{ l.nombre }}</strong></td>
+                        <td>{{ l.categoria|upper }}</td>
+                        <td>${{ "%.0f"|format(l.precio) }}</td>
+                        <td>{% if l.disponible %}<span class="badge badge-pagado">Disponible</span>{% else %}<span class="badge badge-cancelado">Agotado</span>{% endif %}</td>
+                        <td>
+                            <div class="admin-actions-cell">
+                                <a href="{{ url_for('editar_licor', id=l.id) }}" class="btn-sm btn-edit">Editar</a>
+                                <form method="POST" action="{{ url_for('eliminar_licor', id=l.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar este licor?');">
+                                    <button type="submit" class="btn-sm btn-delete">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

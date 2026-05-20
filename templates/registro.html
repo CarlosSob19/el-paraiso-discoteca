@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Cuenta — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="1.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+        </div>
+        <h2 class="auth-title">Crear cuenta</h2>
+        <p class="auth-subtitle">Únete a El Paraíso</p>
+
+        <form method="POST" action="{{ url_for('registro') }}" class="auth-form">
+            <div class="form-group">
+                <label>Nombre completo</label>
+                <div class="date-input-wrapper">
+                    <input type="text" name="nombre" placeholder="Tu nombre" required>
+                    <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <div class="date-input-wrapper">
+                    <input type="email" name="email" placeholder="tu@email.com" required>
+                    <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <div class="date-input-wrapper">
+                    <input type="password" name="password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Confirmar contraseña</label>
+                <div class="date-input-wrapper">
+                    <input type="password" name="confirm_password" placeholder="Repite tu contraseña" required>
+                    <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        <circle cx="12" cy="16" r="1"/>
+                    </svg>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Crear cuenta</button>
+        </form>
+
+        <div class="auth-footer">
+            ¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Iniciar sesión</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

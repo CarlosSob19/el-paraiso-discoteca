@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ evento.nombre }} — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="event-detail">
+    <div class="container event-detail-grid">
+        <div class="event-detail-image">
+            <img src="{{ evento.imagen }}" alt="{{ evento.nombre }}">
+        </div>
+        <div class="event-detail-info">
+            <div class="event-detail-label">{{ evento.genero.nombre }}</div>
+            <h1 class="event-detail-title">{{ evento.nombre }}</h1>
+            <p class="event-detail-desc">{{ evento.descripcion }}</p>
+
+            <div class="event-detail-meta">
+                <div class="event-detail-meta-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>{{ evento.fecha_evento.strftime('%A, %d de %B de %Y') }}</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>{{ evento.hora_evento }}</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>{{ evento.ubicacion }}</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    </svg>
+                    <span>{{ evento.artista }}</span>
+                </div>
+                <div class="event-detail-meta-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>{{ evento.cupos }} cupos disponibles</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 12px; display: block;">Selecciona tu entrada</label>
+                <div class="event-detail-prices">
+                    <div class="price-option selected" data-tipo="general">
+                        <div class="price-option-name">General</div>
+                        <div class="price-option-value">${{ "%.0f"|format(evento.precio_general) }}</div>
+                    </div>
+                    <div class="price-option" data-tipo="vip">
+                        <div class="price-option-name">VIP</div>
+                        <div class="price-option-value">${{ "%.0f"|format(evento.precio_vip) }}</div>
+                    </div>
+                    <div class="price-option" data-tipo="palco">
+                        <div class="price-option-name">Palco</div>
+                        <div class="price-option-value">${{ "%.0f"|format(evento.precio_palco) }}</div>
+                    </div>
+                    <div class="price-option" data-tipo="backstage">
+                        <div class="price-option-name">Backstage</div>
+                        <div class="price-option-value">${{ "%.0f"|format(evento.precio_backstage) }}</div>
+                    </div>
+                    <div class="price-option" data-tipo="king" style="grid-column: span 2;">
+                        <div class="price-option-name">King</div>
+                        <div class="price-option-value">${{ "%.0f"|format(evento.precio_king) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="event-detail-actions">
+                <div class="quantity-selector">
+                    <button onclick="updateQty(-1)">−</button>
+                    <input type="number" id="qty" value="1" min="1" max="{{ evento.cupos }}">
+                    <button onclick="updateQty(1)">+</button>
+                </div>
+                <button class="btn-primary" id="btn-add-detail" data-event-id="{{ evento.id }}" {% if evento.cupos == 0 %}disabled{% endif %} style="flex: 1;">
+                    {% if evento.cupos == 0 %}Agotado{% else %}Agregar al carrito{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if relacionados %}
+<section class="products-section related">
+    <div class="container">
+        <h2 class="section-title-small">También te puede interesar</h2>
+        <div class="products-grid">
+            {% for evt in relacionados %}
+            <div class="event-card" data-id="{{ evt.id }}">
+                <a href="{{ url_for('evento', id=evt.id) }}" class="event-link">
+                    <div class="event-image-wrap">
+                        <img src="{{ evt.imagen }}" alt="{{ evt.nombre }}">
+                    </div>
+                </a>
+                <div class="event-info">
+                    <div class="event-date">{{ evt.fecha_evento.strftime('%d %b') }} • {{ evt.hora_evento }}</div>
+                    <a href="{{ url_for('evento', id=evt.id) }}" class="event-name">{{ evt.nombre }}</a>
+                    <div class="event-artista">{{ evt.artista }}</div>
+                    <div class="event-meta">
+                        <span class="event-genre">{{ evt.ubicacion }}</span>
+                        <span class="event-price">${{ "%.0f"|format(evt.precio_general) }}</span>
+                    </div>
+                </div>
+                <button class="event-add" data-event-id="{{ evt.id }}" data-tipo="general">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Comprar
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<script>
+function updateQty(delta) {
+    const input = document.getElementById('qty');
+    let val = parseInt(input.value) || 1;
+    const max = parseInt(input.max) || 99;
+    val = Math.max(1, Math.min(max, val + delta));
+    input.value = val;
+}
+</script>
+{% endblock %}

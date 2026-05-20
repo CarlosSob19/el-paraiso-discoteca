@@ -1,0 +1,623 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservar Mesa — El Paraíso{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ─── BUG 1 CORREGIDO: cursor: none !important removido ───
+   Antes: .reserva-form input, textarea, select { cursor: none !important; }
+   Los inputs mostraban el cursor normal del sistema (text/pointer)          */
+.reserva-form input,
+.reserva-form textarea,
+.reserva-form select {
+    cursor: text;
+}
+.reserva-form input[type="date"] {
+    cursor: pointer;
+}
+.reserva-form button {
+    cursor: pointer;
+}
+
+.reservas-hero {
+    padding: 140px 0 60px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+.reservas-hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    margin-bottom: 16px;
+    text-shadow: var(--neon-glow);
+}
+.reservas-hero p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto 32px;
+}
+
+.reservas-selector {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+}
+.zona-btn {
+    padding: 12px 24px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    /* ─── BUG 2 CORREGIDO: cursor: none → cursor: pointer ─── */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.zona-btn:hover, .zona-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 240, 255, 0.05);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+.zona-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.zona-dot.general   { background: #666; }
+.zona-dot.vip       { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.zona-dot.palco     { background: #a855f7; box-shadow: 0 0 8px #a855f7; }
+.zona-dot.backstage { background: var(--accent-secondary); box-shadow: 0 0 8px var(--accent-secondary); }
+.zona-dot.king      { background: var(--accent-gold); box-shadow: 0 0 8px var(--accent-gold); }
+
+.mapa-club {
+    max-width: 900px;
+    margin: 0 auto 80px;
+    padding: 0 24px;
+}
+.mapa-club-svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.1));
+}
+.mesa {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.mesa:hover rect, .mesa:hover circle {
+    filter: brightness(1.3);
+    stroke: var(--accent);
+    stroke-width: 2;
+}
+.mesa.ocupada  { opacity: 0.3; pointer-events: none; }
+.mesa.reservada{ opacity: 0.5; pointer-events: none; }
+.mesa-text {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 10px;
+    fill: white;
+    pointer-events: none;
+}
+
+.info-panel {
+    max-width: 500px;
+    margin: 0 auto 80px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.info-panel h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+}
+.info-panel .precio {
+    font-family: 'Space Grotesk', monospace;
+    font-size: 2.5rem;
+    color: var(--accent);
+    text-shadow: var(--neon-glow);
+    margin-bottom: 8px;
+}
+.info-panel .capacidad {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+.info-panel .beneficios {
+    text-align: left;
+    margin-bottom: 24px;
+}
+.info-panel .beneficios li {
+    list-style: none;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+}
+.info-panel .beneficios li::before {
+    content: '✓';
+    color: var(--success);
+    margin-right: 12px;
+    font-weight: 700;
+}
+
+.reserva-form-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 5, 0.95);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.reserva-form-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.reserva-form {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.reserva-form h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="reservas-hero">
+    <div class="container">
+        <h1>Reserva tu Mesa</h1>
+        <p>Elige la zona perfecta para tu grupo. Desde la pista general hasta la exclusividad del área King.</p>
+
+        <div class="reservas-selector">
+            <button class="zona-btn active" data-zona="all">
+                <span class="zona-dot general"></span> Todas
+            </button>
+            <button class="zona-btn" data-zona="General">
+                <span class="zona-dot general"></span> General
+            </button>
+            <button class="zona-btn" data-zona="VIP">
+                <span class="zona-dot vip"></span> VIP
+            </button>
+            <button class="zona-btn" data-zona="Palco">
+                <span class="zona-dot palco"></span> Palco
+            </button>
+            <button class="zona-btn" data-zona="Backstage">
+                <span class="zona-dot backstage"></span> Backstage
+            </button>
+            <button class="zona-btn" data-zona="King">
+                <span class="zona-dot king"></span> King
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="mapa-club">
+    <svg class="mapa-club-svg" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="500" rx="20" fill="#0a0a0a" stroke="rgba(0,240,255,0.1)" stroke-width="2"/>
+
+        <rect x="300" y="20" width="200" height="60" rx="8" fill="rgba(0,240,255,0.1)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="400" y="55" text-anchor="middle" fill="var(--accent)" font-family="Bebas Neue" font-size="16" letter-spacing="2">DJ BOOTH / ESCENARIO</text>
+
+        <rect x="200" y="100" width="400" height="150" rx="12" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="8 4"/>
+        <text x="400" y="180" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-family="Inter" font-size="14">PISTA DE BAILE</text>
+
+        <rect x="20" y="200" width="120" height="200" rx="8" fill="rgba(255,215,0,0.05)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
+        <text x="80" y="305" text-anchor="middle" fill="rgba(255,215,0,0.6)" font-family="Inter" font-size="12" transform="rotate(-90 80 305)">BARRA PRINCIPAL</text>
+
+        <g class="mesa" data-id="G-01" data-zona="General" data-precio="0" data-capacidad="4" onclick="seleccionarMesa(this)">
+            <rect x="40" y="100" width="60" height="40" rx="6" fill="#333" stroke="#666" stroke-width="1"/>
+            <text x="70" y="125" text-anchor="middle" class="mesa-text">G-01</text>
+        </g>
+        <g class="mesa" data-id="G-02" data-zona="General" data-precio="0" data-capacidad="4" onclick="seleccionarMesa(this)">
+            <rect x="40" y="160" width="60" height="40" rx="6" fill="#333" stroke="#666" stroke-width="1"/>
+            <text x="70" y="185" text-anchor="middle" class="mesa-text">G-02</text>
+        </g>
+        <g class="mesa ocupada" data-id="G-03" data-zona="General" data-precio="0" data-capacidad="6">
+            <rect x="40" y="420" width="70" height="50" rx="6" fill="#222" stroke="#444" stroke-width="1"/>
+            <text x="75" y="450" text-anchor="middle" class="mesa-text" fill="#666">G-03</text>
+        </g>
+
+        <g class="mesa" data-id="V-01" data-zona="VIP" data-precio="60000" data-capacidad="4" onclick="seleccionarMesa(this)">
+            <rect x="660" y="100" width="60" height="40" rx="6" fill="rgba(0,240,255,0.1)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="690" y="125" text-anchor="middle" class="mesa-text" fill="var(--accent)">V-01</text>
+        </g>
+        <g class="mesa" data-id="V-02" data-zona="VIP" data-precio="60000" data-capacidad="6" onclick="seleccionarMesa(this)">
+            <rect x="660" y="160" width="60" height="40" rx="6" fill="rgba(0,240,255,0.1)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="690" y="185" text-anchor="middle" class="mesa-text" fill="var(--accent)">V-02</text>
+        </g>
+        <g class="mesa reservada" data-id="V-03" data-zona="VIP" data-precio="60000" data-capacidad="4">
+            <rect x="660" y="220" width="60" height="40" rx="6" fill="rgba(0,240,255,0.05)" stroke="rgba(0,240,255,0.3)" stroke-width="1"/>
+            <text x="690" y="245" text-anchor="middle" class="mesa-text" fill="rgba(0,240,255,0.4)">V-03</text>
+        </g>
+
+        <g class="mesa" data-id="P-01" data-zona="Palco" data-precio="120000" data-capacidad="4" onclick="seleccionarMesa(this)">
+            <rect x="160" y="20" width="60" height="50" rx="6" fill="rgba(168,85,247,0.1)" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="190" y="50" text-anchor="middle" class="mesa-text" fill="#a855f7">P-01</text>
+        </g>
+        <g class="mesa" data-id="P-02" data-zona="Palco" data-precio="120000" data-capacidad="8" onclick="seleccionarMesa(this)">
+            <rect x="540" y="20" width="80" height="50" rx="6" fill="rgba(168,85,247,0.1)" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="580" y="50" text-anchor="middle" class="mesa-text" fill="#a855f7">P-02</text>
+        </g>
+
+        <g class="mesa" data-id="B-01" data-zona="Backstage" data-precio="200000" data-capacidad="6" onclick="seleccionarMesa(this)">
+            <rect x="320" y="380" width="80" height="60" rx="8" fill="rgba(255,0,110,0.1)" stroke="var(--accent-secondary)" stroke-width="1.5"/>
+            <text x="360" y="415" text-anchor="middle" class="mesa-text" fill="var(--accent-secondary)">B-01</text>
+        </g>
+
+        <g class="mesa" data-id="K-01" data-zona="King" data-precio="350000" data-capacidad="8" onclick="seleccionarMesa(this)">
+            <rect x="580" y="380" width="100" height="70" rx="10" fill="rgba(255,215,0,0.1)" stroke="var(--accent-gold)" stroke-width="2"/>
+            <text x="630" y="420" text-anchor="middle" class="mesa-text" fill="var(--accent-gold)" font-size="12">K-01 ★</text>
+        </g>
+        <g class="mesa ocupada" data-id="K-02" data-zona="King" data-precio="350000" data-capacidad="10">
+            <rect x="580" y="300" width="110" height="60" rx="10" fill="rgba(255,215,0,0.05)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
+            <text x="635" y="335" text-anchor="middle" class="mesa-text" fill="rgba(255,215,0,0.4)">K-02</text>
+        </g>
+
+        <g transform="translate(20, 460)">
+            <rect x="0" y="0" width="12" height="12" rx="2" fill="#333" stroke="#666"/>
+            <text x="20" y="10" fill="#888" font-size="10" font-family="Inter">General (Gratis)</text>
+            <rect x="120" y="0" width="12" height="12" rx="2" fill="rgba(0,240,255,0.1)" stroke="var(--accent)"/>
+            <text x="140" y="10" fill="var(--accent)" font-size="10" font-family="Inter">VIP ($60k)</text>
+            <rect x="230" y="0" width="12" height="12" rx="2" fill="rgba(168,85,247,0.1)" stroke="#a855f7"/>
+            <text x="250" y="10" fill="#a855f7" font-size="10" font-family="Inter">Palco ($120k)</text>
+            <rect x="350" y="0" width="12" height="12" rx="2" fill="rgba(255,0,110,0.1)" stroke="var(--accent-secondary)"/>
+            <text x="370" y="10" fill="var(--accent-secondary)" font-size="10" font-family="Inter">Backstage ($200k)</text>
+            <rect x="500" y="0" width="12" height="12" rx="2" fill="rgba(255,215,0,0.1)" stroke="var(--accent-gold)"/>
+            <text x="520" y="10" fill="var(--accent-gold)" font-size="10" font-family="Inter">King ($350k)</text>
+            <rect x="630" y="0" width="12" height="12" rx="2" fill="#222" stroke="#444"/>
+            <text x="650" y="10" fill="#666" font-size="10" font-family="Inter">Ocupada</text>
+        </g>
+    </svg>
+</section>
+
+<section class="container" style="margin-bottom: 80px;">
+    <div class="info-panel" id="info-panel" style="display: none;">
+        <h3 id="mesa-titulo">Mesa K-01</h3>
+        <div class="precio" id="mesa-precio">$350.000</div>
+        <div class="capacidad" id="mesa-capacidad">Capacidad: 8 personas</div>
+        <ul class="beneficios" id="mesa-beneficios">
+            <li>Mesa privada exclusiva</li>
+        </ul>
+        <button class="btn-primary" style="width: 100%; cursor: pointer;" onclick="abrirFormularioReserva()">Reservar ahora</button>
+    </div>
+
+    <div class="info-panel" id="info-default">
+        <h3>Selecciona una mesa</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Haz click en cualquier mesa disponible del mapa para ver detalles y reservar.</p>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; text-align: left;">
+            <div style="padding: 16px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="color: var(--accent);">General</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.875rem;">Acceso pista, sin mesa asignada</span>
+            </div>
+            <div style="padding: 16px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="color: var(--accent);">VIP</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.875rem;">Zona preferencial, acceso rápido</span>
+            </div>
+            <div style="padding: 16px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="color: #a855f7;">Palco</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.875rem;">Mesa compartida + 1 botella</span>
+            </div>
+            <div style="padding: 16px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border);">
+                <strong style="color: var(--accent-gold);">King</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.875rem;">Mesa privada + 2 botellas + servicio</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario Reserva Overlay -->
+<div class="reserva-form-overlay" id="reserva-overlay">
+    <div class="reserva-form">
+        <h3>Reservar <span id="form-mesa-nombre">Mesa</span></h3>
+        <!-- ─── BUG 3 CORREGIDO: IDs en cada input para selección confiable ─── -->
+        <form id="form-reserva" onsubmit="event.preventDefault(); enviarReserva();">
+            <div class="form-group">
+                <label>Nombre completo</label>
+                <input id="res-nombre" type="text" placeholder="Tu nombre" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input id="res-telefono" type="tel" placeholder="300 123 4567" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input id="res-email" type="email" placeholder="tu@email.com" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <!-- ─── BUG 3: min dinámico para no permitir fechas pasadas ─── -->
+                    <input id="res-fecha" type="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Personas</label>
+                    <input id="form-personas" type="number" min="1" max="20" value="4" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notas especiales</label>
+                <textarea id="res-notas" rows="2" placeholder="¿Algo que debamos saber?"></textarea>
+            </div>
+            <div style="background: var(--bg-primary); padding: 16px; border-radius: 8px; margin-bottom: 24px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: var(--text-secondary);">Mesa</span>
+                    <span id="form-precio-mesa" style="color: var(--text-primary); font-weight: 600;">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
+                    <span style="color: var(--text-primary); font-weight: 700;">Total</span>
+                    <span id="form-total" style="color: var(--accent); font-weight: 700; font-size: 1.125rem;">$0</span>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 12px; cursor: pointer;" id="btn-confirmar-reserva">
+                Confirmar reserva
+            </button>
+            <button type="button" class="btn-outline" style="width: 100%; cursor: pointer;" onclick="cerrarFormulario()">
+                Cancelar
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ─── REEMPLAZA el bloque <script> de reservas.html por este ─── -->
+<script>
+let mesaSeleccionada = null;
+
+// Fecha mínima = hoy
+document.getElementById('res-fecha').min = new Date().toISOString().split('T')[0];
+
+const beneficiosPorZona = {
+    'General':    ['Acceso a pista principal', 'Barra principal', 'Sin mesa asignada'],
+    'VIP':        ['Zona VIP preferencial', 'Acceso rápido sin filas', 'Servicio de barra VIP'],
+    'Palco':      ['Mesa compartida exclusiva', '1 botella de aguardiente', '4 entradas incluidas', 'Vista panorámica'],
+    'Backstage':  ['Acceso área backstage', 'Meet & greet con DJs', 'Barra libre 2h', '6 entradas incluidas'],
+    'King':       ['Mesa privada exclusiva', '2 botellas premium', 'Servicio de mesero dedicado', '8 entradas incluidas', 'Vista privilegiada']
+};
+
+function seleccionarMesa(element) {
+    if (element.classList.contains('ocupada') || element.classList.contains('reservada')) return;
+
+    document.querySelectorAll('.mesa rect, .mesa circle').forEach(el => {
+        el.style.filter = '';
+    });
+
+    const rect = element.querySelector('rect') || element.querySelector('circle');
+    if (rect) rect.style.filter = 'brightness(1.5) drop-shadow(0 0 10px var(--accent))';
+
+    mesaSeleccionada = {
+        id:        element.dataset.id,
+        zona:      element.dataset.zona,
+        precio:    parseInt(element.dataset.precio),
+        capacidad: parseInt(element.dataset.capacidad)
+    };
+
+    document.getElementById('info-default').style.display = 'none';
+    document.getElementById('info-panel').style.display   = 'block';
+
+    document.getElementById('mesa-titulo').textContent    = `Mesa ${mesaSeleccionada.id} — ${mesaSeleccionada.zona}`;
+    document.getElementById('mesa-precio').textContent    = `$${mesaSeleccionada.precio.toLocaleString()}`;
+    document.getElementById('mesa-capacidad').textContent = `Capacidad: ${mesaSeleccionada.capacidad} personas`;
+
+    const lista = document.getElementById('mesa-beneficios');
+    lista.innerHTML = '';
+    (beneficiosPorZona[mesaSeleccionada.zona] || []).forEach(b => {
+        lista.innerHTML += `<li>${b}</li>`;
+    });
+
+    if (typeof gsap !== 'undefined') {
+        gsap.from('#info-panel', { y: 20, opacity: 0, duration: 0.4 });
+    }
+}
+
+function abrirFormularioReserva() {
+    if (!mesaSeleccionada) return;
+    document.getElementById('form-mesa-nombre').textContent  = mesaSeleccionada.id;
+    document.getElementById('form-personas').max             = mesaSeleccionada.capacidad;
+    document.getElementById('form-personas').value           = Math.min(4, mesaSeleccionada.capacidad);
+    document.getElementById('form-precio-mesa').textContent  = `$${mesaSeleccionada.precio.toLocaleString()}`;
+    document.getElementById('form-total').textContent        = `$${mesaSeleccionada.precio.toLocaleString()}`;
+
+    // Limpiar campos del formulario al abrir
+    document.getElementById('res-nombre').value   = '';
+    document.getElementById('res-telefono').value = '';
+    document.getElementById('res-email').value    = '';
+    document.getElementById('res-fecha').value    = '';
+    document.getElementById('res-notas').value    = '';
+
+    document.getElementById('reserva-overlay').classList.add('active');
+    document.body.style.overflow = 'hidden'; // evita scroll de fondo
+
+    setTimeout(initFlatpickrReserva, 50);
+}
+
+function cerrarFormulario() {
+    document.getElementById('reserva-overlay').classList.remove('active');
+    document.body.style.overflow = ''; // restaura scroll
+}
+
+async function enviarReserva() {
+    if (!mesaSeleccionada) return;
+
+    const btn = document.getElementById('btn-confirmar-reserva');
+
+    const nombre   = document.getElementById('res-nombre').value.trim();
+    const telefono = document.getElementById('res-telefono').value.trim();
+    const email    = document.getElementById('res-email').value.trim();
+    const fecha    = document.getElementById('res-fecha').value;
+    const personas = parseInt(document.getElementById('form-personas').value);
+    const notas    = document.getElementById('res-notas').value.trim();
+
+    // ─── FIX BUG 1: era _toast() → ahora _notify() ───
+    if (!nombre)                              { _notify('Escribe tu nombre', 'danger');              return; }
+    if (!telefono)                            { _notify('Escribe tu teléfono', 'danger');            return; }
+    if (!email || !email.includes('@'))       { _notify('Escribe un email válido', 'danger');        return; }
+    if (!fecha)                               { _notify('Selecciona una fecha', 'danger');           return; }
+    if (!personas || personas < 1)            { _notify('Indica el número de personas', 'danger');   return; }
+    if (personas > mesaSeleccionada.capacidad){ _notify(`Máximo ${mesaSeleccionada.capacidad} personas para esta mesa`, 'danger'); return; }
+
+    // Estado de carga
+    btn.disabled    = true;
+    btn.innerHTML   = '<span class="spinner"></span> Guardando...';
+
+    const reserva = {
+        mesa_id:    mesaSeleccionada.id,
+        mesa_zona:  mesaSeleccionada.zona,
+        mesa_precio: mesaSeleccionada.precio,
+        fecha:      fecha,
+        personas:   personas,
+        nombre:     nombre,
+        telefono:   telefono,
+        email:      email,    // ─── FIX BUG 4: faltaba email ───
+        notas:      notas     // ─── FIX BUG 4: faltaban notas ───
+    };
+
+    try {
+        const response = await fetch('/api/reservas/guardar', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(reserva)
+        });
+
+        const text = await response.text();
+
+        // ─── FIX BUG 2 y 3: data declarado con let + return en caso de error ───
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseErr) {
+            console.error('Respuesta no es JSON válido:', text);
+            _notify('Error del servidor. Intenta de nuevo.', 'danger');
+            btn.disabled  = false;
+            btn.innerHTML = 'Confirmar reserva';
+            return; // ← ESENCIAL: sin esto el código seguía y reventaba
+        }
+
+        if (data.success) {
+            _notify('¡Reserva guardada! Revisa tu carrito.', 'success');
+            if (typeof updateCartBadge === 'function') updateCartBadge(1);
+            cerrarFormulario();
+            setTimeout(() => { window.location.href = '/carrito'; }, 1500);
+        } else {
+            const mensaje = data.message || 'Error al guardar la reserva';
+            _notify(mensaje, 'danger');
+            btn.disabled  = false;
+            btn.innerHTML = 'Confirmar reserva';
+        }
+    } catch (err) {
+        console.error('Error de red:', err);
+        _notify('Error de conexión. Inténtalo de nuevo.', 'danger');
+        btn.disabled  = false;
+        btn.innerHTML = 'Confirmar reserva';
+    }
+}
+
+/* ─── Wrapper de notificaciones (usa showNotification global si existe) ─── */
+function _notify(msg, type) {
+    if (typeof showNotification === 'function') {
+        showNotification(msg, type);
+        return;
+    }
+    // Fallback si main.js no está cargado
+    const colors = { success: '#00ff88', danger: '#ff4757', info: '#00f0ff' };
+    const existing = document.querySelector('.reserva-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className   = 'reserva-toast';
+    toast.textContent = msg;
+    Object.assign(toast.style, {
+        position:   'fixed',
+        bottom:     '24px',
+        right:      '24px',
+        zIndex:     '99999',
+        background: '#1a1a1a',
+        color:      colors[type] || '#fff',
+        border:     `1px solid ${colors[type] || '#444'}`,
+        padding:    '14px 24px',
+        borderRadius: '8px',
+        fontFamily: 'Inter, sans-serif',
+        fontSize:   '14px',
+        boxShadow:  '0 8px 30px rgba(0,0,0,0.5)',
+        transition: 'opacity 0.4s',
+        opacity:    '1'
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+    setTimeout(() => { toast.remove(); },            3000);
+}
+
+// ─── Spinner CSS (inyectado una sola vez) ───
+(function addSpinnerStyle() {
+    if (document.getElementById('reserva-spinner-style')) return;
+    const s = document.createElement('style');
+    s.id = 'reserva-spinner-style';
+    s.textContent = `
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    `;
+    document.head.appendChild(s);
+})();
+
+// ─── Filtros de zona ───
+document.querySelectorAll('.zona-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.zona-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const zona = btn.dataset.zona;
+        document.querySelectorAll('.mesa').forEach(mesa => {
+            const esOcupada   = mesa.classList.contains('ocupada');
+            const esReservada = mesa.classList.contains('reservada');
+            if (zona === 'all' || mesa.dataset.zona === zona) {
+                mesa.style.opacity       = esOcupada ? '0.3' : esReservada ? '0.5' : '1';
+                mesa.style.pointerEvents = esOcupada || esReservada ? 'none' : 'all';
+            } else {
+                mesa.style.opacity       = '0.15';
+                mesa.style.pointerEvents = 'none';
+            }
+        });
+    });
+});
+
+// ─── Cerrar overlay al clic fuera del formulario ───
+document.getElementById('reserva-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('reserva-overlay')) cerrarFormulario();
+});
+
+// ─── Cerrar con tecla Escape ───
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') cerrarFormulario();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+<footer class="footer">
+    <div class="footer-grid">
+        <div>
+            <div class="footer-brand">EL PARAÍSO</div>
+            <p class="footer-desc">La mejor experiencia nocturna de Montería. Desde 2020 llevando la rumba a otro nivel con los mejores DJs, artistas y producciones de Colombia.</p>
+        </div>
+        <div>
+            <div class="footer-title">Navegar</div>
+            <ul class="footer-links">
+                <li><a href="{{ url_for('eventos') }}">Eventos</a></li>
+                <li><a href="{{ url_for('galeria') }}">Galería</a></li>
+                <li><a href="{{ url_for('index') }}#experiencia">Experiencia</a></li>
+                <li><a href="{{ url_for('carrito') }}">Tu carrito</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="footer-title">Géneros</div>
+            <ul class="footer-links">
+                <li><a href="{{ url_for('eventos', slug='crossover') }}">Crossover</a></li>
+                <li><a href="{{ url_for('eventos', slug='reggaeton') }}">Reggaetón & Urbano</a></li>
+                <li><a href="{{ url_for('eventos', slug='electronica') }}">Electrónica</a></li>
+                <li><a href="{{ url_for('eventos', slug='dembow') }}">Dembow</a></li>
+                <li><a href="{{ url_for('eventos', slug='champeta') }}">Champeta</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="footer-title">Soporte</div>
+            <ul class="footer-links">
+                <li><a href="https://wa.me/573226684422?text=Hola%20El%20Paraíso!%20Tengo%20una%20pregunta" target="_blank" rel="noopener">📱 Soporte</a></li>
+                <li><a href="{{ url_for('faq') }}">❓ Preguntas frecuentes</a></li>
+                <li><a href="{{ url_for('politica') }}">🎫 Política de entradas</a></li>
+                <li><a href="{{ url_for('terminos') }}">📋 Términos y condiciones</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2026 El Paraíso. Todos los derechos reservados.</span>
+        <span>Montería, Colombia • La rumba no para</span>
+    </div>
+</footer>

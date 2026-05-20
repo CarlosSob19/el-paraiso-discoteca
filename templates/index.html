@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}El Paraíso — La Mejor Experiencia Nocturna de Montería{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-label">Montería • Colombia</div>
+    <h1 class="hero-title">
+      <span class="line"><span class="line-inner">Donde la</span></span>
+      <span class="line"><span class="line-inner">noche se</span></span>
+      <span class="line"><span class="line-inner">hace leyenda.</span></span>
+    </h1>
+    <p class="hero-desc">
+      El Paraíso no es solo una discoteca. Es el epicentro de la rumba en
+      Montería. Crossover, reggaetón, electrónica y champeta en un solo lugar.
+    </p>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-overlay"></div>
+    <img
+      src="https://images.pexels.com/photos/10613299/pexels-photo-10613299.jpeg"
+      alt="El Paraíso Montería"
+      class="hero-image"
+      loading="eager"
+    />
+    <div class="hero-particles">
+      <div class="particle" style="top:20%;left:10%"></div>
+      <div class="particle" style="top:40%;left:80%;animation-delay:1s"></div>
+      <div class="particle" style="top:60%;left:30%;animation-delay:2s"></div>
+      <div class="particle" style="top:80%;left:70%;animation-delay:3s"></div>
+      <div class="particle" style="top:30%;left:50%;animation-delay:0.5s"></div>
+    </div>
+  </div>
+  <div class="hero-marquee">
+    <div class="marquee-track">
+      <span class="marquee-item">Crossover</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Reggaetón</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Electrónica</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Dembow</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Champeta</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Crossover</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Reggaetón</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Electrónica</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Dembow</span><span class="marquee-item">•</span>
+      <span class="marquee-item">Champeta</span><span class="marquee-item">•</span>
+    </div>
+  </div>
+</section>
+
+<!-- Géneros Musicales -->
+<section class="categories" id="generos">
+  <div class="section-header container">
+    <div class="section-label">01 — Géneros</div>
+    <h2 class="section-title">Cinco ritmos,<br />una sola noche.</h2>
+  </div>
+  <div class="categories-grid container">
+    <div class="category-card" data-slug="crossover">
+      <img src="https://images.unsplash.com/photo-1545128485-c400e7702796?auto=format&fit=crop&w=800" alt="Crossover" loading="lazy" />
+      <div class="category-card-overlay">
+        <div class="category-card-num">01</div>
+        <h3 class="category-card-title">Crossover</h3>
+        <p class="category-card-desc">Salsa, vallenato, merengue y más. La noche perfecta para los que no se quedan con un solo ritmo.</p>
+      </div>
+      <div class="category-card-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+      </div>
+    </div>
+    <div class="category-card" data-slug="reggaeton">
+      <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=800" alt="Reggaetón" loading="lazy" />
+      <div class="category-card-overlay">
+        <div class="category-card-num">02</div>
+        <h3 class="category-card-title">Reggaetón & Urbano</h3>
+        <p class="category-card-desc">Lo más candente del género urbano. Bad Bunny, Feid, Karol G y los éxitos del momento.</p>
+      </div>
+      <div class="category-card-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+      </div>
+    </div>
+    <div class="category-card" data-slug="electronica">
+      <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200" alt="Electrónica" loading="lazy" />
+      <div class="category-card-overlay">
+        <div class="category-card-num">03</div>
+        <h3 class="category-card-title">Electrónica</h3>
+        <p class="category-card-desc">House, techno y Latin House con los mejores DJs de la región. Luces láser y efectos especiales.</p>
+      </div>
+      <div class="category-card-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Próximos Eventos Destacados — Deck Rotatorio -->
+<section class="products" id="eventos">
+  <div class="section-header container">
+    <div class="section-label">02 — Próximos Eventos</div>
+    <h2 class="section-title">Noches que no<br />vas a olvidar.</h2>
+  </div>
+
+  <div class="deck-wrapper">
+    <div class="deck" id="event-deck">
+      {% for evento in destacados %}
+      <div class="deck-card deck-c{{ loop.index }}" data-index="{{ loop.index0 }}" data-id="{{ evento.id }}">
+        <a href="{{ url_for('evento', id=evento.id) }}" class="deck-card-link">
+          <div class="deck-card-image">
+            <img src="{{ evento.imagen }}" alt="{{ evento.nombre }}" loading="lazy" />
+            {# BUG FIX: verificar agotado primero (0 < 50, así que la condición anterior lo ocultaba) #}
+            {% if evento.cupos == 0 %}
+            <span class="deck-tag tag-soldout">Agotado</span>
+            {% elif evento.cupos < 50 %}
+            <span class="deck-tag tag-warning">Últimos cupos</span>
+            {% else %}
+            <span class="deck-tag">{{ evento.genero.nombre }}</span>
+            {% endif %}
+          </div>
+        </a>
+        <div class="deck-card-info">
+          <div class="deck-card-date">{{ evento.fecha_evento.strftime('%d %b') }} • {{ evento.hora_evento }}</div>
+          <a href="{{ url_for('evento', id=evento.id) }}" class="deck-card-name">{{ evento.nombre }}</a>
+          <div class="deck-card-artista">{{ evento.artista }}</div>
+          <div class="deck-card-meta">
+            <span class="deck-card-genre">{{ evento.ubicacion }}</span>
+            <span class="deck-card-price">${{ "%.0f"|format(evento.precio_general) }}</span>
+          </div>
+        </div>
+        <button class="deck-card-add" data-event-id="{{ evento.id }}" data-tipo="general" aria-label="Agregar {{ evento.nombre }} al carrito">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="deck-nav">
+      <button class="deck-nav-btn" id="deck-prev" aria-label="Evento anterior">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="deck-nav-btn" id="deck-next" aria-label="Siguiente evento">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="section-cta">
+    <a href="{{ url_for('eventos') }}" class="btn-outline">Ver todos los eventos</a>
+  </div>
+</section>
+
+<!-- Experiencia -->
+<section class="process" id="experiencia">
+  <div class="section-header container">
+    <div class="section-label">03 — Experiencia</div>
+    <h2 class="section-title">Vivir El Paraíso<br />es diferente.</h2>
+  </div>
+  <div class="process-grid container">
+    <div class="process-item">
+      <div class="process-num">01</div>
+      <h3 class="process-title">Reserva tu entrada</h3>
+      <p class="process-desc">Compra online desde $30.000 COP. General, VIP, Palco, Backstage o King. Elige tu experiencia.</p>
+    </div>
+    <div class="process-item">
+      <div class="process-num">02</div>
+      <h3 class="process-title">Acceso preferencial</h3>
+      <p class="process-desc">Con tu entrada digital, accede sin filas. VIP y superiores tienen entrada exclusiva por puerta lateral.</p>
+    </div>
+    <div class="process-item">
+      <div class="process-num">03</div>
+      <h3 class="process-title">Open Bar & Botellas</h3>
+      <p class="process-desc">Servicio de barra completo. Palco incluye botella, Backstage barra libre, King servicio exclusivo.</p>
+    </div>
+    <div class="process-item">
+      <div class="process-num">04</div>
+      <h3 class="process-title">Hasta el amanecer</h3>
+      <p class="process-desc">La fiesta no para hasta las 4 AM. DJs internacionales, efectos especiales y la mejor energía de Montería.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonial -->
+<section class="testimonial">
+  <p class="testimonial-quote">
+    "El Paraíso es la mejor rumba de Montería. Desde que empecé a salir ahí, no
+    hay otra discoteca que le llegue a los talones. La energía, la gente, la
+    música... eso es lo que me conecta con mi tierra."
+  </p>
+  <div class="testimonial-author">
+    <strong>Manuel Turizo</strong> — Cantante de Montería, Colombia
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="contacto">
+  <div class="cta-bg"></div>
+  <h2 class="cta-title">Únete a la fiesta.</h2>
+  <a href="{{ url_for('eventos') }}" class="cta-btn">
+    Ver calendario completo
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+  </a>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const deck = document.getElementById('event-deck');
+    if (!deck) return;
+    const cards = Array.from(deck.querySelectorAll('.deck-card'));
+    if (!cards.length) return;
+
+    let classes = cards.map((_, i) => 'deck-c' + (i + 1));
+
+    function updateDeck() {
+        cards.forEach((card, i) => { card.className = 'deck-card ' + classes[i]; });
+    }
+
+    const rotateNext = () => { classes.push(classes.shift()); updateDeck(); };
+    const rotatePrev = () => { classes.unshift(classes.pop()); updateDeck(); };
+
+    deck.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('.deck-card-add');
+        if (addBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof addToCart === 'function') {
+                addToCart(parseInt(addBtn.dataset.eventId), 1, addBtn.dataset.tipo || 'general');
+            }
+            return;
+        }
+        const card = e.target.closest('.deck-card');
+        if (!card) return;
+        if (card.classList.contains('deck-c3')) {
+            const link = card.querySelector('.deck-card-link');
+            if (link) window.location.href = link.href;
+        } else {
+            rotateNext();
+        }
+    });
+
+    document.getElementById('deck-next')?.addEventListener('click', rotateNext);
+    document.getElementById('deck-prev')?.addEventListener('click', rotatePrev);
+
+    // Auto-rotate cada 5 segundos, pausar en hover
+    let autoRotate = setInterval(rotateNext, 5000);
+    deck.addEventListener('mouseenter', () => clearInterval(autoRotate));
+    deck.addEventListener('mouseleave', () => { autoRotate = setInterval(rotateNext, 5000); });
+})();
+</script>
+{% endblock %}

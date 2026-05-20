@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Panel de Control</h1>
+
+        <div class="admin-stats">
+            <div class="stat-card">
+                <div class="stat-num">{{ total_eventos }}</div>
+                <div class="stat-label">Eventos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">{{ total_usuarios }}</div>
+                <div class="stat-label">Usuarios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">{{ total_ordenes }}</div>
+                <div class="stat-label">Ventas</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 48px;">
+            <a href="{{ url_for('admin_eventos') }}" class="stat-card" style="text-decoration: none; text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 8px;">🎵</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Eventos</div>
+            </a>
+            <a href="{{ url_for('admin_galeria') }}" class="stat-card" style="text-decoration: none; text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 8px;">📸</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Galería</div>
+            </a>
+            <a href="{{ url_for('admin_promociones') }}" class="stat-card" style="text-decoration: none; text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 8px;">🏷️</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Promociones</div>
+            </a>
+            <a href="{{ url_for('admin_licores') }}" class="stat-card" style="text-decoration: none; text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 8px;">🍾</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Licores</div>
+            </a>
+            <a href="{{ url_for('index') }}" target="_blank" class="stat-card" style="text-decoration: none; text-align: center;">
+                <div style="font-size: 1.5rem; margin-bottom: 8px;">🌐</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">Ver sitio</div>
+            </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 48px;">
+            <div>
+                <h2 class="admin-subtitle">Órdenes recientes</h2>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for orden in ordenes_recientes %}
+                            <tr>
+                                <td>#{{ orden.id }}</td>
+                                <td>{{ orden.usuario.nombre }}</td>
+                                <td>${{ "%.0f"|format(orden.total) }}</td>
+                                <td><span class="badge badge-{{ orden.estado }}">{{ orden.estado }}</span></td>
+                                <td>{{ orden.creado_en.strftime('%d/%m/%Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="admin-subtitle">Próximos eventos</h2>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Evento</th>
+                                <th>Fecha</th>
+                                <th>Cupos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evt in eventos_proximos %}
+                            <tr>
+                                <td>{{ evt.nombre }}</td>
+                                <td>{{ evt.fecha_evento.strftime('%d/%m') }}</td>
+                                <td>{{ evt.cupos }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Eventos — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">Eventos</h1>
+            <a href="{{ url_for('crear_evento') }}" class="btn-primary" style="width: auto; padding: 12px 24px;">+ Nuevo evento</a>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Género</th>
+                        <th>Fecha</th>
+                        <th>Precios</th>
+                        <th>Cupos</th>
+                        <th>Destacado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evt in eventos %}
+                    <tr>
+                        <td><img src="{{ evt.imagen }}" alt="" class="admin-thumb"></td>
+                        <td><strong style="color: var(--text-primary);">{{ evt.nombre }}</strong></td>
+                        <td>{{ evt.genero.nombre }}</td>
+                        <td>{{ evt.fecha_evento.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            G: ${{ "%.0f"|format(evt.precio_general) }}<br>
+                            K: ${{ "%.0f"|format(evt.precio_king) }}
+                        </td>
+                        <td>{{ evt.cupos }}</td>
+                        <td>{% if evt.destacado %}✓{% else %}—{% endif %}</td>
+                        <td>
+                            <div class="admin-actions-cell">
+                                <a href="{{ url_for('editar_evento', id=evt.id) }}" class="btn-sm btn-edit">Editar</a>
+                                <form method="POST" action="{{ url_for('eliminar_evento', id=evt.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar este evento?');">
+                                    <button type="submit" class="btn-sm btn-delete">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

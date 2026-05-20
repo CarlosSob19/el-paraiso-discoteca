@@ -1,0 +1,83 @@
+<nav class="nav-v3" id="navbar" role="navigation" aria-label="Navegación principal">
+    <div class="nav-v3-inner">
+        <!-- Left: Logo + Links -->
+        <div class="nav-v3-left">
+            <a href="{{ url_for('index') }}" class="nav-v3-logo" id="nav-logo" aria-label="El Paraíso — Inicio">
+                <span class="nav-logo-letter">E</span>
+                <span class="nav-logo-letter">L</span>
+                <span class="nav-logo-space"></span>
+                <span class="nav-logo-letter">P</span>
+                <span class="nav-logo-letter">A</span>
+                <span class="nav-logo-letter">R</span>
+                <span class="nav-logo-letter">A</span>
+                <span class="nav-logo-letter">Í</span>
+                <span class="nav-logo-letter">S</span>
+                <span class="nav-logo-letter">O</span>
+            </a>
+
+            <div class="nav-v3-pills">
+                <a href="{{ url_for('index') }}" class="nav-v3-pill {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('eventos') }}" class="nav-v3-pill {% if request.endpoint in ['eventos', 'evento'] %}active{% endif %}">Eventos</a>
+                <a href="{{ url_for('galeria') }}" class="nav-v3-pill {% if request.endpoint == 'galeria' %}active{% endif %}">Galería</a>
+                <a href="{{ url_for('licores') }}" class="nav-v3-pill {% if request.endpoint == 'licores' %}active{% endif %}">Licores</a>
+                <a href="{{ url_for('reservas') }}" class="nav-v3-pill {% if request.endpoint == 'reservas' %}active{% endif %}">
+                    Reservas
+                    <span class="nav-v3-badge-new">NUEVO</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="nav-v3-right">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('mis_ordenes') }}" class="nav-v3-link">Mis Órdenes</a>
+                {% if current_user.es_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-v3-link">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="nav-v3-link">Salir</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-v3-link">Acceder</a>
+            {% endif %}
+
+            <a href="{{ url_for('carrito') }}" class="nav-v3-cta" aria-label="Carrito de compras">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M6 6h15l-1.5 9h-12L6 6z"/>
+                    <circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+                </svg>
+                Carrito
+                {% if cart_count > 0 %}
+                <span class="nav-v3-cta-badge" aria-label="{{ cart_count }} items en el carrito">{{ cart_count }}</span>
+                {% endif %}
+            </a>
+        </div>
+
+        <!-- Mobile toggle -->
+        <button class="nav-v3-mobile-toggle" id="mobile-toggle"
+                aria-expanded="false" aria-controls="mobile-menu" aria-label="Abrir menú">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<!-- WhatsApp Float Button -->
+<a href="https://wa.me/573226684422?text=Hola%20El%20Para%C3%ADso!%20Quiero%20info%20sobre%20eventos%20y%20reservas"
+   class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+</a>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label="Menú móvil">
+    <a href="{{ url_for('index') }}">Inicio</a>
+    <a href="{{ url_for('eventos') }}">Eventos</a>
+    <a href="{{ url_for('galeria') }}">Galería</a>
+    <a href="{{ url_for('licores') }}">Licores</a>
+    <a href="{{ url_for('reservas') }}">Reservas</a>
+    <a href="{{ url_for('carrito') }}">Carrito</a>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">Acceder</a>
+    {% endif %}
+</div>

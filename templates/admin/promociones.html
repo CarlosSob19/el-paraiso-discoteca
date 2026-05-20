@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Promociones — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">Promociones</h1>
+            <a href="{{ url_for('crear_promocion') }}" class="btn-primary" style="width: auto; padding: 12px 24px;">+ Nueva promoción</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+            {% for promo in promociones %}
+            <div class="promo-card">
+                <span class="promo-badge {% if promo.activa %}promo-badge-active{% else %}promo-badge-inactive{% endif %}">
+                    {% if promo.activa %}Activa{% else %}Inactiva{% endif %}
+                </span>
+                <div class="promo-code">{{ promo.codigo }}</div>
+                <div class="promo-name">{{ promo.nombre }}</div>
+                <div class="promo-desc">{{ promo.descripcion }}</div>
+                <div class="promo-stats">
+                    <div class="promo-stat">
+                        <strong>{{ promo.descuento_porcentaje }}%</strong><br>
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">Descuento</span>
+                    </div>
+                    <div class="promo-stat">
+                        <strong>${{ "%.0f"|format(promo.descuento_valor) }}</strong><br>
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">Valor fijo</span>
+                    </div>
+                    <div class="promo-stat">
+                        <strong>{{ promo.usos_actuales }}/{{ promo.usos_maximos }}</strong><br>
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">Usos</span>
+                    </div>
+                </div>
+                {% if promo.tipo_entrada %}
+                <div style="margin-top: 12px; font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">
+                    Solo para: {{ promo.tipo_entrada|upper }}
+                </div>
+                {% endif %}
+                <div style="margin-top: 16px; display: flex; gap: 8px;">
+                    <form method="POST" action="{{ url_for('eliminar_promocion', id=promo.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar esta promoción?');">
+                        <button type="submit" class="btn-sm btn-delete">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not promociones %}
+        <div class="cart-empty" style="padding: 80px 0;">
+            <p style="color: var(--text-muted);">No hay promociones activas. Crea la primera.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Preguntas Frecuentes — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <div class="page-label">Ayuda</div>
+        <h1 class="page-title">Preguntas Frecuentes</h1>
+        <p class="page-desc">Todo lo que necesitas saber antes de venir a El Paraíso. Si no encuentras tu duda, escríbenos por WhatsApp.</p>
+    </div>
+</section>
+
+<section class="faq-section" style="padding: 80px 0 160px;">
+    <div class="container" style="max-width: 800px;">
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿A qué hora abren y cierran?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                Abrimos puertas desde las <strong style="color: var(--accent);">9:00 PM</strong> y la rumba no para hasta las <strong style="color: var(--accent);">4:00 AM</strong>. Te recomiendo llegar temprano si quieres mesa, porque después de las 11:00 PM se pone full. Si tienes entrada VIP o King, puedes entrar por la puerta lateral sin fila desde las 10:00 PM.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Puedo entrar con tenis o camiseta?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                Hermano, acá es <strong style="color: var(--accent);">smart casual</strong> para arriba. Tenis solo si son blancos y limpios, camiseta solo si es de marca y con cuello. No te pongas chanclas ni sandalias porque no pasas. Si vas a mesa King o Backstage, mejor venir con zapato y camisa — eso es nivel. Si no cumples el dress code, te toca devolverte y nadie quiere eso a las 11 de la noche.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿La entrada General incluye mesa?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                No, mi rey. La entrada General ($30.000) te da acceso a la pista y la barra principal. Si quieres mesa, tienes que subir a <strong style="color: var(--accent);">VIP ($60.000)</strong> o reservar Palco, Backstage o King desde la web. Las mesas General son de pie en la barra, pero si llegas temprano puedes conseguir un banquito. Si vas en grupo, te sale mejor reservar Palco que incluye botella.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Puedo pagar con Nequi o Daviplata?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                ¡Claro que sí! En la web aceptamos <strong style="color: var(--accent);">Nequi, Daviplata, tarjeta</strong> y si no, pagas en efectivo en taquilla. En la barra del club también aceptamos datáfono. Si reservas mesa King o Backstage, te recomiendo pagar online para asegurarla porque esas se agotan rápido. Si pagas en taquilla, llega antes de las 10:00 PM o te quedas sin mesa.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Hay parqueadero?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                Sí, tenemos parqueadero privado con vigilancia 24h. Cuesta <strong style="color: var(--accent);">$5.000</strong> la noche completa. Si vienes en moto es gratis. Si tienes entrada VIP o superior, el parqueadero es gratis también. Te recomiendo no dejar el carro en la calle porque la zona se pone muy full y no queremos que te pase nada. El parqueadero cierra a las 5:00 AM.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Puedo cancelar mi reserva y me devuelven la plata?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                Si cancelas con <strong style="color: var(--accent);">más de 48 horas</strong> de anticipación, te devolvemos el 100%. Entre 24 y 48 horas, te devolvemos el 50%. Con menos de 24 horas, no hay devolución pero puedes cambiar la fecha para otro evento. Si el evento se cancela por nosotros (lluvia, emergencia, etc.), te devolvemos todo sin preguntas. Escríbenos por WhatsApp para gestionar la devolución.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Qué pasa si llego borracho o causo problemas?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                Hermano, acá venimos a pasarla bien, no a armar show. Tenemos seguridad privada y si te pones agresivo o molestas a otros clientes, te sacamos sin devolución. Si llegas muy borracho en la puerta, la seguridad puede negarte el ingreso. <strong style="color: var(--accent);">Respeta el ambiente</strong> y todo el mundo la pasa bacano. Si ves a alguien causando problemas, avísale a cualquier mesero o guardia.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Hay edad mínima para entrar?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                Sí, <strong style="color: var(--accent);">+18 años</strong> obligatorio. En la puerta te piden cédula y si no la tienes, no entras ni con entrada comprada. No hagas el intento con foto de la cédula en el celular porque no funciona. Si vienes de fuera de Montería, pasaporte o licencia de conducción también sirven. Menores de edad ni en la puerta se quedan, por favor.
+            </div>
+        </div>
+
+        <div class="faq-item" style="margin-bottom: 24px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+            <button class="faq-question" style="width: 100%; padding: 24px; background: var(--bg-secondary); border: none; color: var(--text-primary); text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; cursor: none; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;" onclick="this.parentElement.classList.toggle('active'); this.nextElementSibling.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';">
+                <span>¿Puedo celebrar mi cumpleaños en El Paraíso?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer" style="display: none; padding: 0 24px 24px; color: var(--text-secondary); line-height: 1.7; font-size: 0.9375rem;">
+                ¡Obvio! Escribenos por WhatsApp con al menos <strong style="color: var(--accent);">una semana de anticipación</strong> y te armamos el paquete. Incluye mesa decorada, torta, champaña, entrada gratis para el cumpleañero y descuento del 20% para sus amigos. Si reservas mesa King, te regalamos una botella extra. El cumpleañero tiene que traer cédula para confirmar la fecha. ¡Te la vas a pasar brutal!
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+.faq-item.active .faq-question svg {
+    transform: rotate(180deg);
+}
+.faq-item.active .faq-question {
+    background: var(--bg-tertiary) !important;
+    border-bottom: 1px solid var(--border);
+}
+.faq-question:hover {
+    background: var(--bg-tertiary) !important;
+    color: var(--accent);
+}
+</style>
+{% endblock %}

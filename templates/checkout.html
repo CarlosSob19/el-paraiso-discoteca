@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Compra — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="checkout-section">
+    <div class="container checkout-grid">
+        <div class="checkout-form">
+            <h1 class="checkout-title">Confirmar compra</h1>
+
+            <form method="POST" action="{{ url_for('checkout') }}">
+                <div class="form-section">
+                    <h3>Datos del comprador</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <div class="date-input-wrapper">
+                                <input type="text" value="{{ current_user.nombre }}" readonly>
+                                <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <div class="date-input-wrapper">
+                                <input type="email" value="{{ current_user.email }}" readonly>
+                                <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Teléfono *</label>
+                            <div class="date-input-wrapper">
+                                <input type="tel" name="telefono" placeholder="300 123 4567" required>
+                                <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Cédula *</label>
+                            <div class="date-input-wrapper">
+                                <input type="text" name="cedula" placeholder="1.234.567.890" required>
+                                <svg class="date-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Método de pago</h3>
+                    <div class="metodos-pago">
+                        <label class="metodo-pago-option">
+                            <input type="radio" name="metodo_pago" value="nequi" required>
+                            <div class="metodo-pago-card">
+                                <div class="metodo-pago-icon" style="background: linear-gradient(135deg, #00a8e6, #0077b6);">N</div>
+                                <div class="metodo-pago-info">
+                                    <strong>Nequi</strong>
+                                    <span>Paga con tu celular</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="metodo-pago-option">
+                            <input type="radio" name="metodo_pago" value="daviplata">
+                            <div class="metodo-pago-card">
+                                <div class="metodo-pago-icon" style="background: linear-gradient(135deg, #ff6b00, #ff3c00);">D</div>
+                                <div class="metodo-pago-info">
+                                    <strong>Daviplata</strong>
+                                    <span>Desde tu app Davivienda</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="metodo-pago-option">
+                            <input type="radio" name="metodo_pago" value="tarjeta">
+                            <div class="metodo-pago-card">
+                                <div class="metodo-pago-icon" style="background: linear-gradient(135deg, #ffd700, #ffaa00);">💳</div>
+                                <div class="metodo-pago-info">
+                                    <strong>Tarjeta</strong>
+                                    <span>Crédito o débito</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="metodo-pago-option">
+                            <input type="radio" name="metodo_pago" value="efectivo">
+                            <div class="metodo-pago-card">
+                                <div class="metodo-pago-icon" style="background: linear-gradient(135deg, #00ff88, #00cc6a);">💵</div>
+                                <div class="metodo-pago-info">
+                                    <strong>Efectivo</strong>
+                                    <span>Paga en taquilla</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary btn-block btn-large" id="btn-confirmar">
+                    Confirmar y pagar
+                </button>
+            </form>
+        </div>
+
+        <div class="checkout-summary">
+            <h3>Tu orden</h3>
+            {% for item in orden.items %}
+            <div class="checkout-item">
+                <span>{{ item.evento.nombre }} ({{ item.tipo_entrada|upper }}) x{{ item.cantidad }}</span>
+                <span>${{ "%.0f"|format(item.precio_unitario * item.cantidad) }}</span>
+            </div>
+            {% endfor %}
+            <div class="checkout-total">
+                <span>Total</span>
+                <span>${{ "%.0f"|format(total) }}</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+</style>
+{% endblock %}

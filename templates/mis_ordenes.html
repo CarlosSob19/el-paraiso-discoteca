@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Órdenes — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Mis Órdenes</h1>
+
+        {% if ordenes %}
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            {% for orden in ordenes %}
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-family: 'Space Grotesk', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px;">Orden #{{ orden.id }}</div>
+                        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em;">
+                            {% if orden.estado == 'pagado' %}✓ Pagado{% elif orden.estado == 'pendiente_pago' %}⏳ Pendiente de pago{% else %}🕐 {{ orden.estado|title }}{% endif %}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-family: 'Space Grotesk', monospace; font-size: 1.5rem; color: var(--accent); font-weight: 600;">${{ "%.0f"|format(orden.total) }}</div>
+                        <div style="font-size: 0.8125rem; color: var(--text-muted);">{{ orden.creado_en.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                    {% for item in orden.items %}
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; color: var(--text-secondary); font-size: 0.9375rem;">
+                        <span>
+                            {% if item.evento_id is none %}Reserva{% elif item.evento_id < 0 %}Licor{% else %}{{ item.evento.nombre }}{% endif %}
+                            ({{ item.tipo_entrada|upper }}) x{{ item.cantidad }}
+                        </span>
+                        <span>${{ "%.0f"|format(item.precio_unitario * item.cantidad) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if orden.codigo_confirmacion %}
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Código de entrada</div>
+                        <div style="font-family: 'Space Grotesk', monospace; font-size: 1.25rem; color: var(--accent); font-weight: 600; letter-spacing: 0.1em;">{{ orden.codigo_confirmacion }}</div>
+                    </div>
+                    <a href="{{ url_for('confirmacion', orden_id=orden.id) }}" class="btn-sm btn-edit">Ver QR</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="cart-empty" style="padding: 120px 0;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1">
+                <path d="M6 6h15l-1.5 9h-12L6 6z"/>
+                <circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+            </svg>
+            <h2>No tienes órdenes aún</h2>
+            <p style="color: var(--text-muted); margin-bottom: 32px;">Explora nuestros eventos y asegura tu lugar en la mejor rumba de Montería.</p>
+            <a href="{{ url_for('eventos') }}" class="btn-outline">Ver eventos</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Galería — El Paraíso{% endblock %}
+
+{% block content %}
+<!-- Lightbox Overlay -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+    </button>
+    <img src="" alt="" class="lightbox-img" id="lightbox-img">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<section class="page-header">
+    <div class="container">
+        <div class="page-label">Memorias</div>
+        <h1 class="page-title">Galería</h1>
+        <p class="page-desc">Las noches más épicas de El Paraíso capturadas en imágenes. Haz click para ampliar.</p>
+    </div>
+</section>
+
+<section class="gallery-section">
+    <div class="container">
+        <!-- Filtros de eventos -->
+        <div class="gallery-filters">
+            <button class="gallery-filter active" data-filter="all">Todas</button>
+            <button class="gallery-filter" data-filter="crossover">Crossover</button>
+            <button class="gallery-filter" data-filter="reggaeton">Reggaetón</button>
+            <button class="gallery-filter" data-filter="electronica">Electrónica</button>
+            <button class="gallery-filter" data-filter="dembow">Dembow</button>
+            <button class="gallery-filter" data-filter="champeta">Champeta</button>
+        </div>
+
+        <!-- Grid Masonry -->
+        <div class="gallery-grid">
+            <div class="gallery-item gallery-item-large" data-category="electronica">
+                <img src="https://images.unsplash.com/photo-1594623930572-300a3011d9ae?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Noche de Electrónica">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Electrónica</span>
+                    <h3 class="gallery-title">Neon Nights</h3>
+                    <p class="gallery-date">15 Marzo 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="reggaeton">
+                <img src="https://images.unsplash.com/photo-1553236152-72dd67ab92ed?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Reggaetón Night">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Reggaetón</span>
+                    <h3 class="gallery-title">Urban Vibes</h3>
+                    <p class="gallery-date">22 Marzo 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="crossover">
+                <img src="https://images.unsplash.com/photo-1740572569816-9c437c4b9c4d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Crossover">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Crossover</span>
+                    <h3 class="gallery-title">Salsa & Vallenato</h3>
+                    <p class="gallery-date">8 Marzo 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item gallery-item-tall" data-category="electronica">
+                <img src="https://images.unsplash.com/photo-1647314620432-7e27193891cb?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="DJ Set">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Electrónica</span>
+                    <h3 class="gallery-title">DJ Neon Live</h3>
+                    <p class="gallery-date">1 Abril 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="dembow">
+                <img src="https://i1.sndcdn.com/artworks-Us29THTlmxIX2ZtG-iKezkg-t500x500.jpg" alt="Dembow">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Dembow</span>
+                    <h3 class="gallery-title">Perreo Intenso</h3>
+                    <p class="gallery-date">29 Marzo 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item gallery-item-wide" data-category="champeta">
+                <img src="https://staticprd.minuto30.com/wp-content/uploads/2014/03/champeta1.jpg" alt="Champeta">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Champeta</span>
+                    <h3 class="gallery-title">Costa Caribe</h3>
+                    <p class="gallery-date">5 Abril 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="reggaeton">
+                <img src="https://estaticos-cdn.prensaiberica.es/clip/c4d07b93-9a25-49c6-b501-385dd694dc39_16-9-discover-aspect-ratio_default_0.jpg" alt="VIP Zone">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Reggaetón</span>
+                    <h3 class="gallery-title">VIP Experience</h3>
+                    <p class="gallery-date">12 Abril 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item gallery-item-tall" data-category="electronica">
+                <img src="https://sc04.alicdn.com/kf/Hded2d2ade45e4a09918794f806a4883fx.jpg" alt="Laser Show">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Electrónica</span>
+                    <h3 class="gallery-title">Laser Show</h3>
+                    <p class="gallery-date">18 Abril 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="champeta">
+                <img src="https://aldianews.com/sites/default/files/2022-03/foto%20grande%20AL%20DIA_6.png" alt="Bailarines">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Champeta</span>
+                    <h3 class="gallery-title">Bailarines</h3>
+                    <p class="gallery-date">9 Mayo 2026</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="reggaeton">
+                <img src="https://st3.depositphotos.com/1138869/17440/i/450/depositphotos_174407464-stock-photo-drunk-man-lying-on-floor.jpg" alt="Afterparty">
+                <div class="gallery-overlay">
+                    <span class="gallery-tag">Reggaetón</span>
+                    <h3 class="gallery-title">Afterparty</h3>
+                    <p class="gallery-date">16 Mayo 2026</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Filtros de galería
+document.querySelectorAll('.gallery-filter').forEach(filter => {
+    filter.addEventListener('click', () => {
+        const category = filter.dataset.filter;
+
+        // Actualizar botones activos
+        document.querySelectorAll('.gallery-filter').forEach(f => f.classList.remove('active'));
+        filter.classList.add('active');
+
+        // Filtrar items
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            if (category === 'all' || item.dataset.category === category) {
+                gsap.to(item, { opacity: 1, scale: 1, duration: 0.4, display: 'block' });
+            } else {
+                gsap.to(item, { opacity: 0, scale: 0.8, duration: 0.4, display: 'none' });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

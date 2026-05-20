@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Licores — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <div class="page-label">Barra</div>
+        <h1 class="page-title">Nuestra Barra</h1>
+        <p class="page-desc">Las mejores botellas para tu mesa. Whisky, ron, aguardiente, vodka, tequila y champagne.</p>
+    </div>
+</section>
+
+<section class="licores-section">
+    <div class="container">
+        <div class="licores-filters" role="group" aria-label="Filtrar por categoría">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="aguardiente">Aguardiente</button>
+            <button class="filter-btn" data-filter="ron">Ron</button>
+            <button class="filter-btn" data-filter="whiskey">Whiskey</button>
+            <button class="filter-btn" data-filter="vodka">Vodka</button>
+            <button class="filter-btn" data-filter="tequila">Tequila</button>
+            <button class="filter-btn" data-filter="champagne">Champagne</button>
+        </div>
+
+        <div class="licores-grid">
+            {% for licor in licores %}
+            <div class="licor-card" data-categoria="{{ licor.categoria }}">
+                <div class="licor-image-wrap">
+                    <img src="{{ licor.imagen }}" alt="{{ licor.nombre }}" loading="lazy">
+                </div>
+                <div class="licor-info">
+                    <div class="licor-categoria">{{ licor.categoria|upper }}</div>
+                    <h3 class="licor-nombre">{{ licor.nombre }}</h3>
+                    <p class="licor-desc">{{ licor.descripcion }}</p>
+                    <div class="licor-footer">
+                        <span class="licor-precio">${{ "%.0f"|format(licor.precio) }}</span>
+                        <div class="licor-add-group">
+                            <div class="licor-quantity-control">
+                                <button class="qty-btn" data-licor-id="{{ licor.id }}" data-delta="-1" aria-label="Disminuir cantidad">−</button>
+                                <input type="number"
+                                    id="licor-qty-{{ licor.id }}"
+                                    class="qty-input"
+                                    value="1"
+                                    min="1"
+                                    max="99"
+                                    aria-label="Cantidad de {{ licor.nombre }}">
+                                <button class="qty-btn" data-licor-id="{{ licor.id }}" data-delta="1" aria-label="Aumentar cantidad">+</button>
+                            </div>
+                            <button class="licor-add-btn" data-licor-id="{{ licor.id }}" aria-label="Agregar {{ licor.nombre }} al carrito">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path d="M12 5v14M5 12h14"/>
+                                </svg>
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not licores %}
+        <div class="cart-empty" style="padding: 120px 0;">
+            <p style="color: var(--text-muted);">Próximamente nuestra carta de licores.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    // ── Controles de cantidad ────────────────────────────────────────────────
+    document.querySelector('.licores-grid')?.addEventListener('click', (e) => {
+        // Botones +/-
+        const qtyBtn = e.target.closest('.qty-btn');
+        if (qtyBtn) {
+            const licorId = qtyBtn.dataset.licorId;
+            const delta   = parseInt(qtyBtn.dataset.delta);
+            const input   = document.getElementById('licor-qty-' + licorId);
+            if (input) {
+                input.value = Math.max(1, Math.min(99, (parseInt(input.value) || 1) + delta));
+            }
+            return;
+        }
+
+        // Botón Agregar
+        const addBtn = e.target.closest('.licor-add-btn');
+        if (addBtn) {
+            const licorId = addBtn.dataset.licorId;
+            const qty     = parseInt(document.getElementById('licor-qty-' + licorId)?.value) || 1;
+            addLicorToCart(licorId, qty);
+        }
+    });
+
+    // ── Agregar al carrito ───────────────────────────────────────────────────
+    async function addLicorToCart(licorId, qty) {
+        try {
+            const res  = await fetch('/api/carrito/licor/agregar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ licor_id: licorId, cantidad: qty })
+            });
+            const data = await res.json();
+            if (data.success) {
+                updateCartBadge(data.cart_count);
+                showNotification(qty + 'x botella agregada al carrito', 'success');
+            } else {
+                showNotification(data.message || 'Error al agregar', 'danger');
+            }
+        } catch {
+            showNotification('Error de conexión', 'danger');
+        }
+    }
+
+    // ── Filtros de categoría ─────────────────────────────────────────────────
+    document.querySelector('.licores-filters')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+
+        document.querySelectorAll('.licores-filters .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const cat = btn.dataset.filter;
+        document.querySelectorAll('.licor-card').forEach(card => {
+            const visible = cat === 'all' || card.dataset.categoria === cat;
+            if (visible) {
+                card.style.display = 'block';
+                gsap.fromTo(card, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 });
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

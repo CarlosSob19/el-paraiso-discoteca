@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Galería — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">Galería de Fotos</h1>
+        </div>
+
+        <!-- Formulario subir imagen -->
+        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-bottom: 48px;">
+            <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; margin-bottom: 24px; letter-spacing: 0.05em;">Subir nueva imagen</h3>
+            <form method="POST" action="{{ url_for('subir_imagen_galeria') }}" enctype="multipart/form-data">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Título</label>
+                        <input type="text" name="titulo" placeholder="Ej: Noche de Electrónica" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Categoría</label>
+                        <select name="categoria" required>
+                            <option value="crossover">Crossover</option>
+                            <option value="reggaeton">Reggaetón</option>
+                            <option value="electronica">Electrónica</option>
+                            <option value="dembow">Dembow</option>
+                            <option value="champeta">Champeta</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Fecha del evento</label>
+                        <input type="date" name="fecha_evento">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Orden</label>
+                        <input type="number" name="orden" value="0" min="0">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Subir archivo</label>
+                        <input type="file" name="imagen" accept="image/*">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>O URL externa</label>
+                        <input type="url" name="imagen_url" placeholder="https://...">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="width: auto; margin-top: 16px; padding: 12px 32px;">Subir imagen</button>
+            </form>
+        </div>
+
+        <!-- Grid de imágenes -->
+        <div class="admin-gallery-grid">
+            {% for img in imagenes %}
+            <div class="admin-gallery-item">
+                <img src="{{ img.imagen_url }}" alt="{{ img.titulo }}">
+                <div class="admin-gallery-item-overlay">
+                    <div class="admin-gallery-item-title">{{ img.titulo }}</div>
+                    <div class="admin-gallery-item-cat">{{ img.categoria }} • {{ img.fecha_evento.strftime('%d/%m/%Y') if img.fecha_evento else 'Sin fecha' }}</div>
+                </div>
+                <form method="POST" action="{{ url_for('eliminar_imagen_galeria', id=img.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar esta imagen?');">
+                    <button type="submit" class="admin-gallery-delete">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not imagenes %}
+        <div class="cart-empty" style="padding: 80px 0;">
+            <p style="color: var(--text-muted);">No hay imágenes en la galería. Sube la primera.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ genero_actual.nombre if genero_actual else 'Próximos Eventos' }} — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <div class="page-label">Calendario</div>
+        <h1 class="page-title">{{ genero_actual.nombre if genero_actual else 'Próximos Eventos' }}</h1>
+        <p class="page-desc">{{ genero_actual.descripcion if genero_actual else 'Descubre todas las noches que tenemos preparadas para ti en El Paraíso.' }}</p>
+    </div>
+</section>
+
+<section class="products-section">
+    <div class="container">
+        <div class="products-toolbar">
+            <span class="products-count">{{ eventos|length }} evento{{ 's' if eventos|length != 1 }}</span>
+            <div class="products-filters" role="group" aria-label="Filtrar por género">
+                <a href="{{ url_for('eventos') }}" class="filter-btn {% if not genero_actual %}active{% endif %}">Todo</a>
+                {% for gen in generos_nav %}
+                <a href="{{ url_for('eventos', slug=gen.slug) }}" class="filter-btn {% if genero_actual and genero_actual.id == gen.id %}active{% endif %}">{{ gen.nombre }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="products-grid">
+            {% for evt in eventos %}
+            <div class="event-card" data-id="{{ evt.id }}">
+                <a href="{{ url_for('evento', id=evt.id) }}" class="event-link">
+                    <div class="event-image-wrap">
+                        <img src="{{ evt.imagen }}" alt="{{ evt.nombre }}" loading="lazy">
+                        {# BUG FIX: verificar agotado primero (0 < 50 siempre es verdadero, ocultaba la etiqueta de agotado) #}
+                        {% if evt.cupos == 0 %}
+                        <span class="event-tag tag-soldout">Agotado</span>
+                        {% elif evt.cupos < 50 %}
+                        <span class="event-tag tag-warning">Últimos cupos</span>
+                        {% else %}
+                        <span class="event-tag">{{ evt.genero.nombre }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+                <div class="event-info">
+                    <div class="event-date">{{ evt.fecha_evento.strftime('%d %b') }} • {{ evt.hora_evento }}</div>
+                    <a href="{{ url_for('evento', id=evt.id) }}" class="event-name">{{ evt.nombre }}</a>
+                    <div class="event-artista">{{ evt.artista }}</div>
+                    <div class="event-meta">
+                        <span class="event-genre">{{ evt.ubicacion }}</span>
+                        <span class="event-price">Desde ${{ "%.0f"|format(evt.precio_general) }}</span>
+                    </div>
+                </div>
+                <button class="event-add"
+                        data-event-id="{{ evt.id }}"
+                        data-tipo="general"
+                        {% if evt.cupos == 0 %}disabled aria-disabled="true"{% endif %}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    {% if evt.cupos == 0 %}Agotado{% else %}Comprar entrada{% endif %}
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not eventos %}
+        <div class="cart-empty" style="padding: 120px 0; text-align: center;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>
+            </svg>
+            <h2>No hay eventos programados</h2>
+            <p>Pronto anunciaremos nuevas fechas. ¡Mantente atento!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

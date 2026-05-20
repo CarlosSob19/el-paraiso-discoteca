@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Evento — El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Crear Evento</h1>
+
+        <form method="POST" action="{{ url_for('crear_evento') }}" enctype="multipart/form-data" class="admin-form" style="max-width: 800px;">
+            <div class="form-group">
+                <label>Nombre del evento</label>
+                <input type="text" name="nombre" placeholder="Ej: Noche de Crossover" required>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" rows="4" placeholder="Describe el evento..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Género musical</label>
+                    <select name="genero_id" required>
+                        {% for gen in generos %}
+                        <option value="{{ gen.id }}">{{ gen.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Artista / DJ</label>
+                    <input type="text" name="artista" placeholder="Ej: DJ Pipe">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha del evento</label>
+                    <div class="date-input-wrapper">
+    <input type="text" name="fecha_evento" class="flatpickr-input" placeholder="Selecciona fecha" required readonly>
+    <svg class="date-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+</div>
+                </div>
+                <div class="form-group">
+                    <label>Hora</label>
+                    <input type="time" name="hora_evento" value="22:00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ubicación</label>
+                <input type="text" name="ubicacion" value="El Paraíso - Montería">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio General ($)</label>
+                    <input type="number" name="precio_general" value="30000" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Precio VIP ($)</label>
+                    <input type="number" name="precio_vip" value="60000" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Precio Palco ($)</label>
+                    <input type="number" name="precio_palco" value="120000" min="0">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio Backstage ($)</label>
+                    <input type="number" name="precio_backstage" value="200000" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Precio King ($)</label>
+                    <input type="number" name="precio_king" value="350000" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Cupos disponibles</label>
+                    <input type="number" name="cupos" value="500" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Imagen del evento</label>
+                <input type="file" name="imagen" accept="image/*">
+                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 8px; display: block;">URL de imagen o archivo. Si dejas vacío, se usa la imagen por defecto.</small>
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom: 24px;">
+                <label>
+                    <input type="checkbox" name="destacado" value="1">
+                    <span style="color: var(--text-secondary); font-size: 0.875rem;">Marcar como evento destacado</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Crear evento</button>
+                <a href="{{ url_for('admin_eventos') }}" class="btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
