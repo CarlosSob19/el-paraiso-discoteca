@@ -1315,4 +1315,4 @@ with app.app_context():
     init_db()
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv('FLASK_DEBUG', 'True').lower() in ('true', '1', 'yes'), port=5000)
+    app.run(debug=os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 'yes'), port=5000)

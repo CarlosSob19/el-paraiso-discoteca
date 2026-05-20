@@ -41,7 +41,7 @@ Este proyecto es una plataforma completa de venta de entradas desarrollada con F
 ## Estructura del proyecto
 
 ```
-├── app.py                 — Aplicación Flask principal, modelos, rutas y lógica
+├── app.py                 — Aplicación Flask principal, modelos, rutas y logica
 ├── templates/             — Vistas HTML con Jinja2
 │   ├── base.html
 │   ├── index.html
