@@ -50,7 +50,19 @@ Este proyecto es una plataforma completa de venta de entradas desarrollada con F
 │   ├── carrito.html
 │   ├── checkout.html
 │   ├── login.html
+|   ├── confirmacion.html
+|   ├── faq.html
+|   ├── confirmacion.html
+|   ├── galeria.html
+|   ├── licores.html
+|   ├── mis_ordenes.html
 │   ├── registro.html
+|   ├── politica.html
+|   ├── recuperar_password.html
+|   ├── registro.html
+|   ├── reservas.html
+|   ├── reset_password.html
+|   ├── .terminoshtml
 │   ├── partials/
 │   │   ├── nav.html
 │   │   ├── footer.html
@@ -59,12 +71,18 @@ Este proyecto es una plataforma completa de venta de entradas desarrollada con F
 │       ├── dashboard.html
 │       ├── eventos.html
 │       ├── crear_evento.html
+|       ├── crear_licor.html
+|       ├── crear_promocion.html
+|       ├── editar_licor.html
+|       ├── eventos.html
+|       ├── galeria.html
+|       ├── licores.html
+|       ├── promociones.html
 │       └── editar_evento.html
 ├── static/
 │   ├── css/style.css      — Estilos nightclub neón
 │   └── js/main.js         — Animaciones y lógica del carrito
-├── requirements.txt       — Dependencias
-└── .env                   — Variables de entorno (opcional)
+└── requirements.txt       — Dependencias
 ```
 
 ## Configuración y ejecución
