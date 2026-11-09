@@ -2572,15 +2572,15 @@ body {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
-  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(255, 255, 255, 0.13) 0%, transparent 62%),
+    linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
 }
 .licor-image-wrap img {
-  width: 80%;
-  height: auto;
+  position: absolute;
+  inset: 6%;
+  width: 88%;
+  height: 88%;
   object-fit: contain;
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
   transition: all 0.4s ease;
