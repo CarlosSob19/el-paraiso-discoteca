@@ -1087,6 +1087,15 @@ def guardar_reserva():
     if not mesa:
         return jsonify({'success': False, 'message': 'La mesa no existe'}), 400
 
+    # shortcut: dos envíos en el mismo instante podrían pasar; un índice único lo cerraría si hay mucho tráfico
+    ocupada = ReservaMesa.query.filter(
+        ReservaMesa.mesa_id == mesa['id'],
+        ReservaMesa.fecha == fecha,
+        ReservaMesa.estado.in_(['pendiente', 'confirmada'])
+    ).first()
+    if ocupada:
+        return jsonify({'success': False, 'message': 'Esa mesa ya está reservada para esa fecha. Elige otra.'}), 409
+
     precio   = mesa['precio']
     personas = max(1, int(payload.get('personas', 1)))
 
