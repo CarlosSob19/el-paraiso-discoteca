@@ -35,16 +35,6 @@
                     </div>
                     {% endfor %}
                 </div>
-
-                {% if orden.codigo_confirmacion %}
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Código de entrada</div>
-                        <div style="font-family: 'Space Grotesk', monospace; font-size: 1.25rem; color: var(--accent); font-weight: 600; letter-spacing: 0.1em;">{{ orden.codigo_confirmacion }}</div>
-                    </div>
-                    <a href="{{ url_for('confirmacion', orden_id=orden.id) }}" class="btn-sm btn-edit">Ver QR</a>
-                </div>
-                {% endif %}
             </div>
             {% endfor %}
         </div>
