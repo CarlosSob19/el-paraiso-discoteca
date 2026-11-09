@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS eventos (
     fecha_evento     DATE         NOT NULL,
     hora_evento      VARCHAR(10)  DEFAULT '22:00',
     artista          VARCHAR(100),
-    ubicacion        VARCHAR(100) DEFAULT 'El Paraíso - Montería',
+    ubicacion        VARCHAR(100) DEFAULT 'Calle 9 Mz 15 Lote 10, Montería',
     creado_en        DATETIME     DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_eventos_fecha (fecha_evento),
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS ordenes (
     CONSTRAINT fk_ordenes_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- evento_id es NULL cuando el ítem es una reserva de mesa
+-- evento_id y licor_id son NULL cuando el ítem es una reserva de mesa
 CREATE TABLE IF NOT EXISTS items_orden (
     id              INT         NOT NULL AUTO_INCREMENT,
     orden_id        INT         NOT NULL,
@@ -139,7 +139,9 @@ CREATE TABLE IF NOT EXISTS items_orden (
     cantidad        INT         NOT NULL,
     precio_unitario DOUBLE      NOT NULL,
     tipo_entrada    VARCHAR(20) DEFAULT 'general',
+    licor_id        INT,
     PRIMARY KEY (id),
+    CONSTRAINT fk_items_licor  FOREIGN KEY (licor_id)  REFERENCES licores (id),
     CONSTRAINT fk_items_orden  FOREIGN KEY (orden_id)  REFERENCES ordenes (id),
     CONSTRAINT fk_items_evento FOREIGN KEY (evento_id) REFERENCES eventos (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -156,61 +158,200 @@ INSERT IGNORE INTO generos_musicales (nombre, slug, descripcion) VALUES
     ('Champeta',           'champeta',    'El sonido autóctono de la Costa Caribe');
 
 INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
-SELECT 'Noche de Crossover',
-       'La mejor noche de salsa, vallenato y merengue de Montería. Con DJ Pipe y la orquesta Costa Brava en vivo.',
-       30000, 60000, 120000, 200000, 350000, 500, g.id,
+SELECT 'Éxitos de la Champeta',
+       'Disfruta una noche de éxitos de la champeta en Paraíso Club.',
+       20000, 45000, 90000, 160000, 280000, 300, g.id,
        'https://images.unsplash.com/photo-1740572569816-9c437c4b9c4d?q=80&w=1170&auto=format&fit=crop',
-       TRUE, CURDATE() + INTERVAL 5 DAY, '22:00', 'DJ Pipe & Costa Brava', 'El Paraíso - Montería'
-FROM generos_musicales g
-WHERE g.slug = 'crossover'
-  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Noche de Crossover');
-
-INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
-SELECT 'Reggaetón Night',
-       'Lo más candente del género urbano. Bad Bunny, Feid, Karol G y más en una noche inolvidable.',
-       35000, 70000, 140000, 220000, 380000, 600, g.id,
-       'https://zumbido.cl/wp-content/uploads/2024/08/J-Alvarez-2.jpg',
-       TRUE, CURDATE() + INTERVAL 12 DAY, '23:00', 'DJ Urbano & MC Karibe', 'El Paraíso - Montería'
-FROM generos_musicales g
-WHERE g.slug = 'reggaeton'
-  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Reggaetón Night');
-
-INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
-SELECT 'Electro Paradise',
-       'Noche de electrónica con los mejores DJs de la región. Luces láser, efectos especiales y mucha energía.',
-       40000, 80000, 150000, 250000, 400000, 400, g.id,
-       'https://tse2.mm.bing.net/th/id/OIP.0iJTnYNpez6CU0wWfeBKvAHaE7?r=0&rs=1&pid=ImgDetMain',
-       TRUE, CURDATE() + INTERVAL 19 DAY, '23:30', 'DJ Neon & Laser Crew', 'El Paraíso - Montería'
-FROM generos_musicales g
-WHERE g.slug = 'electronica'
-  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Electro Paradise');
-
-INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
-SELECT 'Dembow Explosion',
-       'El ritmo del momento. Una noche llena de perreo intenso y los mejores éxitos del dembow colombiano.',
-       25000, 50000, 100000, 180000, 320000, 700, g.id,
-       'https://tse1.mm.bing.net/th/id/OIP.zLPUwqKqg7n86YpRZ8WsJAHaFv?r=0&rs=1&pid=ImgDetMain',
-       FALSE, CURDATE() + INTERVAL 8 DAY, '22:30', 'DJ Dembow & La Banda', 'El Paraíso - Montería'
-FROM generos_musicales g
-WHERE g.slug = 'dembow'
-  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Dembow Explosion');
-
-INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
-SELECT 'Champeta Classics',
-       'El sonido autóctono de la Costa Caribe. Una noche para bailar champeta hasta el amanecer.',
-       20000, 45000, 90000, 160000, 280000, 800, g.id,
-       'https://tse4.mm.bing.net/th/id/OIP.L-dzQVOagzvJ8hkqLl0Q8gHaE8?r=0&rs=1&pid=ImgDetMain',
-       FALSE, CURDATE() + INTERVAL 15 DAY, '21:00', 'Grupo Niche Champetero', 'El Paraíso - Montería'
+       TRUE, CURDATE() + INTERVAL 5 DAY, '21:00', 'Paraíso Club', 'Calle 9 Mz 15 Lote 10, Montería'
 FROM generos_musicales g
 WHERE g.slug = 'champeta'
-  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Champeta Classics');
+  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Éxitos de la Champeta');
 
 INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
-SELECT 'VIP Experience',
-       'Noche exclusiva con open bar, servicio personalizado y las mejores vistas del club.',
-       50000, 100000, 180000, 300000, 450000, 300, g.id,
+SELECT 'Noche de Locura',
+       'Llega que sí es para eso: rumba toda la noche en Paraíso Club.',
+       30000, 60000, 120000, 200000, 350000, 300, g.id,
        'https://images.unsplash.com/photo-1647314620432-7e27193891cb?q=80&w=1169&auto=format&fit=crop',
-       TRUE, CURDATE() + INTERVAL 26 DAY, '22:00', 'Artista Sorpresa', 'El Paraíso - Montería'
+       TRUE, CURDATE() + INTERVAL 8 DAY, '22:00', 'Paraíso Club', 'Calle 9 Mz 15 Lote 10, Montería'
 FROM generos_musicales g
-WHERE g.slug = 'reggaeton'
-  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'VIP Experience');
+WHERE g.slug = 'crossover'
+  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Noche de Locura');
+
+INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
+SELECT 'El Clásico Español en Pantalla Gigante',
+       'Vive el clásico español en pantalla gigante en Paraíso Club.',
+       20000, 45000, 90000, 160000, 280000, 300, g.id,
+       'https://images.unsplash.com/photo-1647314620432-7e27193891cb?q=80&w=1169&auto=format&fit=crop',
+       TRUE, CURDATE() + INTERVAL 12 DAY, '14:00', 'Pantalla gigante', 'Calle 9 Mz 15 Lote 10, Montería'
+FROM generos_musicales g
+WHERE g.slug = 'crossover'
+  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'El Clásico Español en Pantalla Gigante');
+
+INSERT INTO eventos (nombre, descripcion, precio_general, precio_vip, precio_palco, precio_backstage, precio_king, cupos, genero_id, imagen, destacado, fecha_evento, hora_evento, artista, ubicacion)
+SELECT 'Selección Colombia en Pantalla Gigante',
+       'Vamos todos, apoyemos a la Selección Colombia. Te esperamos en Paraíso Club Montería.',
+       20000, 45000, 90000, 160000, 280000, 300, g.id,
+       'https://images.unsplash.com/photo-1740572569816-9c437c4b9c4d?q=80&w=1170&auto=format&fit=crop',
+       TRUE, CURDATE() + INTERVAL 19 DAY, '18:00', 'Pantalla gigante', 'Calle 9 Mz 15 Lote 10, Montería'
+FROM generos_musicales g
+WHERE g.slug = 'crossover'
+  AND NOT EXISTS (SELECT 1 FROM eventos e WHERE e.nombre = 'Selección Colombia en Pantalla Gigante');
+
+-- ------------------------------------------------------------
+-- Licores: marcas muy vendidas en Colombia
+-- Precios y fotos de licoresmedellin.com, consultados el 2026-11-09
+-- Las fotos pertenecen a esa tienda; se enlazan, no se copian.
+-- ------------------------------------------------------------
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Aguardiente Antioqueño Tapa Verde 750 ml',
+       'Aguardiente colombiano de la Fábrica de Licores de Antioquia, el más vendido del país.',
+       53900, 'aguardiente',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/AGUARDIENTE_ANTIOQUENO_TAPA_VERDE_BOTELLA_750ML.jpg?v=1793051613',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Aguardiente Antioqueño Tapa Verde 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Aguardiente Antioqueño Tapa Azul 750 ml',
+       'Versión sin azúcar del aguardiente de la Fábrica de Licores de Antioquia.',
+       55900, 'aguardiente',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/aguardiente-antioqueno-tapa-azul-botella-750mlaguardiente-antioqueno-tapa-azul-botella-750mlaguardiente-antioquenolicores-medellin-2388907.jpg?v=1759123399',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Aguardiente Antioqueño Tapa Azul 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Aguardiente Amarillo de Manzanares 750 ml',
+       'Aguardiente de la Industria Licorera de Caldas.',
+       57900, 'aguardiente',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/aguardiente-amarillo-de-manzanares-botella-750mlaguardiente-amarillo-de-manzanares-botella-750mlindustria-licorera-de-caldaslicores-medellin-7021712.jpg?v=1765494233',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Aguardiente Amarillo de Manzanares 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Ron Medellín 3 Años Añejo 750 ml',
+       'Ron añejo colombiano de la Fábrica de Licores de Antioquia.',
+       56900, 'ron',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-medellin-3-anos-anejo-botella-750mlron-medellin-3-anos-anejo-botella-750mlron-medellinlicores-medellin-8660657.jpg?v=1759123251',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Ron Medellín 3 Años Añejo 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Ron Viejo de Caldas 3 Años Tradicional 750 ml',
+       'Ron colombiano de la Industria Licorera de Caldas.',
+       58900, 'ron',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-viejo-de-caldas-3-anos-tradicional-botella-750mlron-viejo-de-caldas-3-anos-tradicional-botella-750mlron-viejo-de-caldaslicores-medellin-1250736.jpg?v=1759123369',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Ron Viejo de Caldas 3 Años Tradicional 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Ron Viejo de Caldas 8 Años Carta de Oro 750 ml',
+       'Ron colombiano añejado 8 años, de la Industria Licorera de Caldas.',
+       102900, 'ron',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-viejo-de-caldas-8-anos-carta-de-oro-botella-750mlron-viejo-de-caldas-8-anos-carta-de-oro-botella-750mlron-viejo-de-caldaslicores-medellin-8336735.jpg?v=1759123370',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Ron Viejo de Caldas 8 Años Carta de Oro 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Whisky Old Parr 12 Años 750 ml',
+       'Whisky escocés de mezcla, añejado 12 años.',
+       159000, 'whiskey',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-old-parr-12-anos-botella-750mlwhisky-old-parr-12-anos-botella-750mlold-parrlicores-medellin-1357166.jpg?v=1759122553',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Whisky Old Parr 12 Años 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Whisky Buchanan''s Deluxe 12 Años 750 ml',
+       'Whisky escocés de mezcla, añejado 12 años.',
+       185900, 'whiskey',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-buchanans-deluxe-12-anos-botella-750mlwhisky-buchanans-deluxe-12-anos-botella-750mlbuchananslicores-medellin-2276071.jpg?v=1765490172',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Whisky Buchanan''s Deluxe 12 Años 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Whisky Buchanan''s Master 750 ml',
+       'Whisky escocés de mezcla de la casa Buchanan''s.',
+       217900, 'whiskey',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-buchanans-master-botella-750mlwhisky-buchanans-master-botella-750mlbuchananslicores-medellin-3145715.jpg?v=1759122553',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Whisky Buchanan''s Master 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Whisky Johnnie Walker Red Label 700 ml',
+       'Whisky escocés de mezcla.',
+       79900, 'whiskey',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-johnnie-walker-red-label-botella-700mlwhisky-johnnie-walker-red-label-botella-700mljohnnie-walkerlicores-medellin-9011566.jpg?v=1759122553',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Whisky Johnnie Walker Red Label 700 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Whisky Johnnie Walker Black Label 700 ml',
+       'Whisky escocés de mezcla, añejado 12 años.',
+       172900, 'whiskey',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/WHISKY_JOHNNIE_WALKER_BLACK_LABEL_BOTELLA_700ML.jpg?v=1764364351',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Whisky Johnnie Walker Black Label 700 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Vodka Absolut 700 ml',
+       'Vodka sueco.',
+       93000, 'vodka',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/vodka-absolut-botella-700mlvodka-absolut-botella-700mlabsolut-vodkalicores-medellin-2766595.jpg?v=1759122630',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Vodka Absolut 700 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Vodka Smirnoff N° 21 700 ml',
+       'Vodka clásico de la marca Smirnoff.',
+       111000, 'vodka',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/vodka-smirnoff-botella-700mlvodka-smirnoff-botella-700mlsmirnofflicores-medellin-2446150.jpg?v=1759122630',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Vodka Smirnoff N° 21 700 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Tequila José Cuervo Especial Reposado 750 ml',
+       'Tequila mexicano reposado.',
+       98900, 'tequila',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-jose-cuervo-especial-reposado-botella-750mltequila-jose-cuervo-especial-reposado-botella-750mljose-cuervolicores-medellin-5501636.jpg?v=1776272385',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Tequila José Cuervo Especial Reposado 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Tequila José Cuervo Especial Silver 750 ml',
+       'Tequila mexicano plateado.',
+       98900, 'tequila',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-jose-cuervo-especial-silver-botella-750mltequila-jose-cuervo-especial-silver-botella-750mljose-cuervolicores-medellin-2367928.jpg?v=1759123228',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Tequila José Cuervo Especial Silver 750 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Tequila Don Julio Blanco 700 ml',
+       'Tequila mexicano blanco.',
+       271900, 'tequila',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-don-julio-blanco-botella-700mltequila-don-julio-blanco-botella-700mltequila-don-juliolicores-medellin-3471506.jpg?v=1764878992',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Tequila Don Julio Blanco 700 ml');
+
+INSERT INTO licores (nombre, descripcion, precio, categoria, imagen, disponible)
+SELECT 'Champagne Moët & Chandon Brut 750 ml',
+       'Champagne francés brut.',
+       563900, 'champagne',
+       'https://cdn.shopify.com/s/files/1/0602/6376/0011/files/champagne-moet-chandon-brut-botella-750mlchampagne-moet-chandon-brut-botella-750mlmoet-hennessylicores-medellin-2709495.jpg?v=1759122554',
+       TRUE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM licores l WHERE l.nombre = 'Champagne Moët & Chandon Brut 750 ml');

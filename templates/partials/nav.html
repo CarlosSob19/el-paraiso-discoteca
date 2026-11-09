@@ -34,7 +34,7 @@
                 {% if current_user.es_admin %}
                     <a href="{{ url_for('admin_dashboard') }}" class="nav-v3-link">Admin</a>
                 {% endif %}
-                <a href="{{ url_for('logout') }}" class="nav-v3-link">Salir</a>
+                <a href="javascript:void(0)" onclick="document.getElementById('logout-form').submit(); return false;" class="nav-v3-link">Salir</a>
             {% else %}
                 <a href="{{ url_for('login') }}" class="nav-v3-link">Acceder</a>
             {% endif %}
@@ -59,6 +59,11 @@
     </div>
 </nav>
 
+{% if current_user.is_authenticated %}
+<form id="logout-form" method="POST" action="{{ url_for('logout') }}" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
+{% endif %}
+
 <!-- WhatsApp Float Button -->
 <a href="https://wa.me/573226684422?text=Hola%20El%20Para%C3%ADso!%20Quiero%20info%20sobre%20eventos%20y%20reservas"
    class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
@@ -76,7 +81,7 @@
     <a href="{{ url_for('reservas') }}">Reservas</a>
     <a href="{{ url_for('carrito') }}">Carrito</a>
     {% if current_user.is_authenticated %}
-        <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        <a href="javascript:void(0)" onclick="document.getElementById('logout-form').submit(); return false;">Cerrar sesión</a>
     {% else %}
         <a href="{{ url_for('login') }}">Acceder</a>
     {% endif %}

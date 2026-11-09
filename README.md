@@ -132,7 +132,7 @@ http://127.0.0.1:5000
 Al iniciar la aplicación por primera vez, se crea automáticamente un administrador:
 
 - **Email:** `admin@elparaiso.com`
-- **Contraseña:** `admin123`
+- **Contraseña:** la que definas en la variable de entorno `ADMIN_PASSWORD`
 
 Este usuario puede acceder al panel de administración en `/admin`.
 

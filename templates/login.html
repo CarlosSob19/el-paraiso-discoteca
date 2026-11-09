@@ -14,7 +14,8 @@
         <h2 class="auth-title">Acceder</h2>
         <p class="auth-subtitle">Bienvenido a El Paraíso</p>
 
-        <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+        <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}" class="auth-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label>Email</label>
                 <div class="date-input-wrapper">
@@ -28,7 +29,6 @@
             <div class="form-group">
                 <div class="form-group-header">
                     <label>Contraseña</label>
-                    <a href="{{ url_for('recuperar_password') }}" class="forgot-link">¿Olvidaste tu contraseña?</a>
                 </div>
                 <div class="date-input-wrapper">
                     <input type="password" name="password" placeholder="••••••••" required>

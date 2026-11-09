@@ -8,6 +8,7 @@
         <h1 class="admin-title">Editar Evento</h1>
 
         <form method="POST" action="{{ url_for('editar_evento', id=evento.id) }}" enctype="multipart/form-data" class="admin-form" style="max-width: 800px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label>Nombre del evento</label>
                 <input type="text" name="nombre" value="{{ evento.nombre }}" required>

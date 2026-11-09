@@ -37,7 +37,7 @@
 
                     {# Controles de cantidad — deshabilitados para reservas (siempre 1) #}
                     <div class="cart-item-qty">
-                        {% if not item.es_reserva %}
+                        {% if not item.es_reserva and not item.es_licor %}
                         <button class="qty-btn"
                                 data-action="decrease"
                                 data-event-id="{{ item.id }}"
@@ -48,7 +48,7 @@
                                 data-event-id="{{ item.id }}"
                                 data-tipo="{{ item.tipo_entrada }}">+</button>
                         {% else %}
-                        <span class="qty-value">1</span>
+                        <span class="qty-value">{{ item.cantidad }}</span>
                         {% endif %}
                     </div>
 
@@ -183,7 +183,7 @@ document.querySelectorAll('.btn-remove-session').forEach(btn => {
 document.querySelectorAll('.btn-remove-licor').forEach(btn => {
     btn.addEventListener('click', () => {
         const licorId = btn.dataset.licorId;
-        apiPost('/api/carrito/eliminar', { evento_id: licorId })
+        apiPost('/api/carrito/eliminar', { licor_id: licorId })
             .then(r => r.json())
             .then(data => { if (data.success) recargar(); })
             .catch(() => alert('Error al eliminar el licor.'));
