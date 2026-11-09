@@ -11,7 +11,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -40,13 +39,6 @@ login_manager = LoginManager(app)
 csrf          = CSRFProtect(app)
 limiter       = Limiter(get_remote_address, app=app, storage_uri='memory://')
 
-# Flask-Mail es opcional: instala con  pip install flask-mail  y configura
-# MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD en tu .env
-try:
-    from flask_mail import Mail, Message as MailMessage
-    mail = Mail(app)
-except ImportError:
-    mail = None
 login_manager.login_view         = 'login'
 login_manager.login_message      = 'Inicia sesión para acceder.'
 login_manager.login_message_category = 'warning'
@@ -156,16 +148,6 @@ class Evento(db.Model):
     creado_en          = db.Column(db.DateTime, default=datetime.utcnow)
     items              = db.relationship('ItemOrden', backref='evento', lazy=True)
 
-    @property
-    def precio_minimo(self):
-        return min(self.precio_general, self.precio_vip, self.precio_palco,
-                   self.precio_backstage, self.precio_king)
-
-    @property
-    def precio_maximo(self):
-        return max(self.precio_general, self.precio_vip, self.precio_palco,
-                   self.precio_backstage, self.precio_king)
-
 
 class ImagenGaleria(db.Model):
     __tablename__ = 'imagenes_galeria'
@@ -224,22 +206,6 @@ class ReservaMesa(db.Model):
     estado      = db.Column(db.String(20),  default='pendiente')  # pendiente | confirmada | cancelada
     usuario_id  = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     creado_en   = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            'id':        self.id,
-            'mesa_id':   self.mesa_id,
-            'mesa_zona': self.mesa_zona,
-            'precio':    self.mesa_precio,
-            'fecha':     self.fecha.isoformat(),
-            'personas':  self.personas,
-            'nombre':    self.nombre,
-            'telefono':  self.telefono,
-            'email':     self.email,
-            'notas':     self.notas or '',
-            'estado':    self.estado,
-            'creado_en': self.creado_en.isoformat(),
-        }
 
 
 class Orden(db.Model):
@@ -847,12 +813,6 @@ def licores():
     licores_list = Licor.query.filter_by(disponible=True).all()
     return render_template('licores.html', licores=licores_list)
 
-@app.route('/api/licores')
-def api_licores():
-    return jsonify([{
-        'id': l.id, 'nombre': l.nombre, 'descripcion': l.descripcion,
-        'precio': l.precio, 'categoria': l.categoria, 'imagen': l.imagen
-    } for l in Licor.query.filter_by(disponible=True).all()])
 
 @app.route('/admin/licores')
 @login_required
@@ -1091,125 +1051,6 @@ def eliminar_promocion(id):
     flash('Promoción eliminada.', 'success')
     return redirect(url_for('admin_promociones'))
 
-@app.route('/api/promocion/validar', methods=['POST'])
-def validar_promocion():
-    data         = request.get_json()
-    codigo       = data.get('codigo', '').upper().strip()
-    tipo_entrada = data.get('tipo_entrada', 'general')
-
-    promo = Promocion.query.filter_by(codigo=codigo, activa=True).first()
-    if not promo:
-        return jsonify({'valido': False, 'message': 'Código no válido'}), 400
-    if promo.fecha_fin and promo.fecha_fin < date.today():
-        return jsonify({'valido': False, 'message': 'Promoción expirada'}), 400
-    if promo.usos_actuales >= promo.usos_maximos:
-        return jsonify({'valido': False, 'message': 'Cupo de usos agotado'}), 400
-    if promo.tipo_entrada and promo.tipo_entrada != tipo_entrada:
-        return jsonify({'valido': False, 'message': f'Código solo válido para entrada {promo.tipo_entrada.upper()}'}), 400
-
-    return jsonify({
-        'valido': True,
-        'nombre': promo.nombre,
-        'descuento_porcentaje': promo.descuento_porcentaje,
-        'descuento_valor': promo.descuento_valor,
-    })
-
-
-# ==================== RECUPERACIÓN DE CONTRASEÑA ====================
-
-def _generar_token_reset(email):
-    return URLSafeTimedSerializer(app.config['SECRET_KEY']).dumps(email, salt='password-reset')
-
-def _verificar_token_reset(token, max_age=1800):
-    try:
-        return URLSafeTimedSerializer(app.config['SECRET_KEY']).loads(
-            token, salt='password-reset', max_age=max_age
-        )
-    except (SignatureExpired, BadSignature):
-        return None
-
-
-@app.route('/recuperar-password', methods=['GET', 'POST'])
-def recuperar_password():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
-    enviado = False
-    email_enviado = ''
-
-    if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
-        user  = Usuario.query.filter_by(email=email).first()
-        enviado      = True
-        email_enviado = email
-
-        if user:
-            token     = _generar_token_reset(email)
-            reset_url = url_for('reset_password', token=token, _external=True)
-            try:
-                if mail is None:
-                    raise RuntimeError('flask_mail no instalado')
-                mail.send(MailMessage(
-                    subject    = 'Restablecer contraseña — El Paraíso',
-                    recipients = [email],
-                    html       = f'''
-                    <div style="font-family:Inter,sans-serif;background:#0a0a0a;color:#e5e5e5;
-                                padding:40px;border-radius:12px;max-width:480px;margin:auto">
-                        <h2 style="color:#00f0ff;letter-spacing:0.1em;text-transform:uppercase">El Paraíso</h2>
-                        <p>Hola <strong>{user.nombre}</strong>,</p>
-                        <p>Recibimos una solicitud para restablecer tu contraseña.</p>
-                        <p>Haz clic en el siguiente botón (válido 30 minutos):</p>
-                        <a href="{reset_url}"
-                           style="display:inline-block;padding:14px 32px;background:#00f0ff;
-                                  color:#0a0a0a;border-radius:8px;font-weight:700;
-                                  text-decoration:none;letter-spacing:0.1em;
-                                  text-transform:uppercase;margin:16px 0">
-                            Restablecer contraseña
-                        </a>
-                        <p style="color:#666;font-size:0.8rem">
-                            Si no solicitaste esto, ignora este mensaje.<br>
-                            El enlace expirará en 30 minutos.
-                        </p>
-                    </div>'''
-                ))
-            except Exception:
-                if app.debug:
-                    app.logger.warning(f'[DEV] Reset URL para {email}: {reset_url}')
-
-    return render_template('recuperar_password.html', enviado=enviado, email_enviado=email_enviado)
-
-
-@app.route('/reset-password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
-    email       = _verificar_token_reset(token)
-    token_valido = email is not None
-
-    if request.method == 'POST' and token_valido:
-        password = request.form.get('password', '')
-        confirm  = request.form.get('confirm_password', '')
-
-        if len(password) < 8:
-            flash('La contraseña debe tener mínimo 8 caracteres.', 'danger')
-            return render_template('reset_password.html', token_valido=True, token=token)
-        if password != confirm:
-            flash('Las contraseñas no coinciden.', 'danger')
-            return render_template('reset_password.html', token_valido=True, token=token)
-
-        user = Usuario.query.filter_by(email=email).first()
-        if user:
-            user.set_password(password)
-            db.session.commit()
-            flash('¡Contraseña actualizada! Ya puedes iniciar sesión.', 'success')
-            return redirect(url_for('login'))
-
-        flash('Usuario no encontrado.', 'danger')
-        return redirect(url_for('recuperar_password'))
-
-    return render_template('reset_password.html', token_valido=token_valido, token=token)
-
 
 # ==================== RESERVAS DE MESA ====================
 
@@ -1314,32 +1155,6 @@ def guardar_reserva():
         db.session.rollback()
         app.logger.error(f'Error al guardar reserva: {e}')
         return jsonify({'success': False, 'message': 'Error interno al guardar la reserva'}), 500
-
-
-@app.route('/api/reservas/mesas')
-def api_mesas_disponibles():
-    """Devuelve mesas con su estado real según reservas en la BD para la fecha dada."""
-    fecha_str = request.args.get('fecha')
-    try:
-        fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date() if fecha_str else date.today()
-    except ValueError:
-        fecha = date.today()
-
-    # Mesas reservadas (confirmadas o pendientes) para esa fecha
-    reservadas_ids = {
-        r.mesa_id for r in
-        ReservaMesa.query.filter(
-            ReservaMesa.fecha == fecha,
-            ReservaMesa.estado.in_(['pendiente', 'confirmada'])
-        ).all()
-    }
-
-    mesas = [
-        {**m, 'estado': 'ocupada' if m['id'] in reservadas_ids else 'disponible'}
-        for m in MESAS
-    ]
-
-    return jsonify({'mesas': mesas, 'fecha': fecha.isoformat()})
 
 
 # ==================== ADMIN ====================
