@@ -1665,56 +1665,69 @@ def init_db():
             db.session.add_all([
                 Licor(nombre='Aguardiente Antioqueño Tapa Verde 750 ml', categoria='aguardiente', precio=53900,
                       descripcion='Aguardiente colombiano de la Fábrica de Licores de Antioquia, el más vendido del país.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/AGUARDIENTE_ANTIOQUENO_TAPA_VERDE_BOTELLA_750ML.jpg?v=1793051613'),
+                      imagen='/static/img/licores/aguardiente-antioqueno-tapa-verde-750-ml.webp'),
                 Licor(nombre='Aguardiente Antioqueño Tapa Azul 750 ml', categoria='aguardiente', precio=55900,
                       descripcion='Versión sin azúcar del aguardiente de la Fábrica de Licores de Antioquia.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/aguardiente-antioqueno-tapa-azul-botella-750mlaguardiente-antioqueno-tapa-azul-botella-750mlaguardiente-antioquenolicores-medellin-2388907.jpg?v=1759123399'),
+                      imagen='/static/img/licores/aguardiente-antioqueno-tapa-azul-750-ml.webp'),
                 Licor(nombre='Aguardiente Amarillo de Manzanares 750 ml', categoria='aguardiente', precio=57900,
                       descripcion='Aguardiente de la Industria Licorera de Caldas.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/aguardiente-amarillo-de-manzanares-botella-750mlaguardiente-amarillo-de-manzanares-botella-750mlindustria-licorera-de-caldaslicores-medellin-7021712.jpg?v=1765494233'),
+                      imagen='/static/img/licores/aguardiente-amarillo-de-manzanares-750-ml.webp'),
                 Licor(nombre='Ron Medellín 3 Años Añejo 750 ml', categoria='ron', precio=56900,
                       descripcion='Ron añejo colombiano de la Fábrica de Licores de Antioquia.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-medellin-3-anos-anejo-botella-750mlron-medellin-3-anos-anejo-botella-750mlron-medellinlicores-medellin-8660657.jpg?v=1759123251'),
+                      imagen='/static/img/licores/ron-medellin-3-anos-anejo-750-ml.webp'),
                 Licor(nombre='Ron Viejo de Caldas 3 Años Tradicional 750 ml', categoria='ron', precio=58900,
                       descripcion='Ron colombiano de la Industria Licorera de Caldas.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-viejo-de-caldas-3-anos-tradicional-botella-750mlron-viejo-de-caldas-3-anos-tradicional-botella-750mlron-viejo-de-caldaslicores-medellin-1250736.jpg?v=1759123369'),
+                      imagen='/static/img/licores/ron-viejo-de-caldas-3-anos-tradicional-750-ml.webp'),
                 Licor(nombre='Ron Viejo de Caldas 8 Años Carta de Oro 750 ml', categoria='ron', precio=102900,
                       descripcion='Ron colombiano añejado 8 años, de la Industria Licorera de Caldas.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-viejo-de-caldas-8-anos-carta-de-oro-botella-750mlron-viejo-de-caldas-8-anos-carta-de-oro-botella-750mlron-viejo-de-caldaslicores-medellin-8336735.jpg?v=1759123370'),
+                      imagen='/static/img/licores/ron-viejo-de-caldas-8-anos-carta-de-oro-750-ml.webp'),
                 Licor(nombre='Whisky Old Parr 12 Años 750 ml', categoria='whiskey', precio=159000,
                       descripcion='Whisky escocés de mezcla, añejado 12 años.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-old-parr-12-anos-botella-750mlwhisky-old-parr-12-anos-botella-750mlold-parrlicores-medellin-1357166.jpg?v=1759122553'),
+                      imagen='/static/img/licores/whisky-old-parr-12-anos-750-ml.webp'),
                 Licor(nombre="Whisky Buchanan's Deluxe 12 Años 750 ml", categoria='whiskey', precio=185900,
                       descripcion='Whisky escocés de mezcla, añejado 12 años.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-buchanans-deluxe-12-anos-botella-750mlwhisky-buchanans-deluxe-12-anos-botella-750mlbuchananslicores-medellin-2276071.jpg?v=1765490172'),
+                      imagen='/static/img/licores/whisky-buchanan-s-deluxe-12-anos-750-ml.webp'),
                 Licor(nombre="Whisky Buchanan's Master 750 ml", categoria='whiskey', precio=217900,
                       descripcion="Whisky escocés de mezcla de la casa Buchanan's.",
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-buchanans-master-botella-750mlwhisky-buchanans-master-botella-750mlbuchananslicores-medellin-3145715.jpg?v=1759122553'),
+                      imagen='/static/img/licores/whisky-buchanan-s-master-750-ml.webp'),
                 Licor(nombre='Whisky Johnnie Walker Red Label 700 ml', categoria='whiskey', precio=79900,
                       descripcion='Whisky escocés de mezcla.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-johnnie-walker-red-label-botella-700mlwhisky-johnnie-walker-red-label-botella-700mljohnnie-walkerlicores-medellin-9011566.jpg?v=1759122553'),
+                      imagen='/static/img/licores/whisky-johnnie-walker-red-label-700-ml.webp'),
                 Licor(nombre='Whisky Johnnie Walker Black Label 700 ml', categoria='whiskey', precio=172900,
                       descripcion='Whisky escocés de mezcla, añejado 12 años.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/WHISKY_JOHNNIE_WALKER_BLACK_LABEL_BOTELLA_700ML.jpg?v=1764364351'),
+                      imagen='/static/img/licores/whisky-johnnie-walker-black-label-700-ml.webp'),
                 Licor(nombre='Vodka Absolut 700 ml', categoria='vodka', precio=93000,
                       descripcion='Vodka sueco.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/vodka-absolut-botella-700mlvodka-absolut-botella-700mlabsolut-vodkalicores-medellin-2766595.jpg?v=1759122630'),
+                      imagen='/static/img/licores/vodka-absolut-700-ml.webp'),
                 Licor(nombre='Vodka Smirnoff N° 21 700 ml', categoria='vodka', precio=111000,
                       descripcion='Vodka clásico de la marca Smirnoff.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/vodka-smirnoff-botella-700mlvodka-smirnoff-botella-700mlsmirnofflicores-medellin-2446150.jpg?v=1759122630'),
+                      imagen='/static/img/licores/vodka-smirnoff-n-21-700-ml.webp'),
                 Licor(nombre='Tequila José Cuervo Especial Reposado 750 ml', categoria='tequila', precio=98900,
                       descripcion='Tequila mexicano reposado.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-jose-cuervo-especial-reposado-botella-750mltequila-jose-cuervo-especial-reposado-botella-750mljose-cuervolicores-medellin-5501636.jpg?v=1776272385'),
+                      imagen='/static/img/licores/tequila-jose-cuervo-especial-reposado-750-ml.webp'),
                 Licor(nombre='Tequila José Cuervo Especial Silver 750 ml', categoria='tequila', precio=98900,
                       descripcion='Tequila mexicano plateado.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-jose-cuervo-especial-silver-botella-750mltequila-jose-cuervo-especial-silver-botella-750mljose-cuervolicores-medellin-2367928.jpg?v=1759123228'),
+                      imagen='/static/img/licores/tequila-jose-cuervo-especial-silver-750-ml.webp'),
                 Licor(nombre='Tequila Don Julio Blanco 700 ml', categoria='tequila', precio=271900,
                       descripcion='Tequila mexicano blanco.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-don-julio-blanco-botella-700mltequila-don-julio-blanco-botella-700mltequila-don-juliolicores-medellin-3471506.jpg?v=1764878992'),
+                      imagen='/static/img/licores/tequila-don-julio-blanco-700-ml.webp'),
                 Licor(nombre='Champagne Moët & Chandon Brut 750 ml', categoria='champagne', precio=563900,
                       descripcion='Champagne francés brut.',
-                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/champagne-moet-chandon-brut-botella-750mlchampagne-moet-chandon-brut-botella-750mlmoet-hennessylicores-medellin-2709495.jpg?v=1759122554'),
+                      imagen='/static/img/licores/champagne-moet-chandon-brut-750-ml.webp'),
             ])
+            db.session.commit()
+
+        # Pasa las filas creadas con el enlace de la tienda a la foto sin fondo.
+        import unicodedata
+        cambio = False
+        for licor in Licor.query.filter(Licor.imagen.like('https://cdn.shopify.com/%')).all():
+            nombre = unicodedata.normalize('NFD', licor.nombre.lower())
+            nombre = ''.join(c for c in nombre if not unicodedata.combining(c))
+            slug = re.sub(r'[^a-z0-9]+', '-', nombre).strip('-')
+            if os.path.exists(os.path.join(app.static_folder, 'img', 'licores', f'{slug}.webp')):
+                licor.imagen = f'/static/img/licores/{slug}.webp'
+                cambio = True
+        if cambio:
             db.session.commit()
 
 
