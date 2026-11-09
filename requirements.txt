@@ -10,3 +10,4 @@ email-validator==2.1.0
 Flask-Limiter==3.5.0
 itsdangerous
 gunicorn
+psycopg2-binary
