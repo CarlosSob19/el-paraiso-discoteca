@@ -2,6 +2,7 @@ import os
 import pymysql
 pymysql.install_as_MySQLdb()
 
+import re
 from datetime import datetime, date
 from functools import wraps
 from dotenv import load_dotenv
@@ -11,6 +12,9 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 load_dotenv()
 
@@ -23,9 +27,17 @@ app.config['SQLALCHEMY_DATABASE_URI']   = db_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER']             = 'static/img/eventos'
+app.config['WTF_CSRF_TIME_LIMIT']       = None
+app.config['SESSION_COOKIE_SAMESITE']   = 'Lax'
+app.config['REMEMBER_COOKIE_HTTPONLY']  = True
+# En Render la página va por HTTPS: las cookies solo viajan cifradas
+app.config['SESSION_COOKIE_SECURE']     = bool(os.getenv('RENDER'))
+app.config['REMEMBER_COOKIE_SECURE']    = bool(os.getenv('RENDER'))
 
 db            = SQLAlchemy(app)
 login_manager = LoginManager(app)
+csrf          = CSRFProtect(app)
+limiter       = Limiter(get_remote_address, app=app, storage_uri='memory://')
 
 # Flask-Mail es opcional: instala con  pip install flask-mail  y configura
 # MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD en tu .env
@@ -43,6 +55,22 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # ── Constantes ────────────────────────────────────────────────────────────────
 TIPOS_ENTRADA       = {'general', 'vip', 'palco', 'backstage', 'king'}
 ALLOWED_EXTENSIONS  = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+ESTADOS_RESERVA     = {'pendiente', 'confirmada', 'cancelada'}
+UBICACION           = 'Calle 9 Mz 15 Lote 10, Montería'
+
+MESAS = [
+    {'id': 'G-01', 'zona': 'General',    'capacidad': 4,  'precio': 0},
+    {'id': 'G-02', 'zona': 'General',    'capacidad': 4,  'precio': 0},
+    {'id': 'G-03', 'zona': 'General',    'capacidad': 6,  'precio': 0},
+    {'id': 'V-01', 'zona': 'VIP',        'capacidad': 4,  'precio': 60000},
+    {'id': 'V-02', 'zona': 'VIP',        'capacidad': 6,  'precio': 60000},
+    {'id': 'V-03', 'zona': 'VIP',        'capacidad': 4,  'precio': 60000},
+    {'id': 'P-01', 'zona': 'Palco',      'capacidad': 4,  'precio': 120000},
+    {'id': 'P-02', 'zona': 'Palco',      'capacidad': 8,  'precio': 120000},
+    {'id': 'B-01', 'zona': 'Backstage',  'capacidad': 6,  'precio': 200000},
+    {'id': 'K-01', 'zona': 'King',       'capacidad': 8,  'precio': 350000},
+    {'id': 'K-02', 'zona': 'King',       'capacidad': 10, 'precio': 350000},
+]
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -57,6 +85,25 @@ def allowed_file(filename):
 def _precio_entrada(evt, tipo):
     """Devuelve el precio del evento según el tipo de entrada."""
     return getattr(evt, f'precio_{tipo}', evt.precio_general)
+
+
+def _validar_usuario(nombre, email):
+    """Devuelve un mensaje de error, o None si los datos son válidos."""
+    if not nombre or len(nombre) > 100:
+        return 'El nombre es obligatorio (máximo 100 caracteres).'
+    if len(email) > 120 or not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
+        return 'Escribe un email válido.'
+    return None
+
+
+def _cantidad_valida(cantidad):
+    """La cantidad debe ser un entero entre 1 y 99."""
+    return type(cantidad) is int and 1 <= cantidad <= 99
+
+
+def _destino_seguro(url):
+    """Solo permite redirigir a páginas internas del sitio."""
+    return bool(url) and url.startswith('/') and not url.startswith(('//', '/\\'))
 
 
 # ==================== MODELOS ====================
@@ -104,7 +151,7 @@ class Evento(db.Model):
     fecha_evento       = db.Column(db.Date, nullable=False)
     hora_evento        = db.Column(db.String(10), default='22:00')
     artista            = db.Column(db.String(100))
-    ubicacion          = db.Column(db.String(100), default='El Paraíso - Montería')
+    ubicacion          = db.Column(db.String(100), default=UBICACION)
     creado_en          = db.Column(db.DateTime, default=datetime.utcnow)
     items              = db.relationship('ItemOrden', backref='evento', lazy=True)
 
@@ -158,6 +205,7 @@ class Licor(db.Model):
     imagen      = db.Column(db.String(300), default='default.jpg')
     disponible  = db.Column(db.Boolean, default=True)
     creado_en   = db.Column(db.DateTime, default=datetime.utcnow)
+    items       = db.relationship('ItemOrden', backref='licor', lazy=True)
 
 
 class ReservaMesa(db.Model):
@@ -210,6 +258,8 @@ class ItemOrden(db.Model):
     orden_id         = db.Column(db.Integer, db.ForeignKey('ordenes.id'), nullable=False)
     # NULL cuando el ítem es una reserva de mesa (no hay evento asociado)
     evento_id        = db.Column(db.Integer, db.ForeignKey('eventos.id'), nullable=True)
+    # Solo tiene valor cuando el ítem es un licor
+    licor_id         = db.Column(db.Integer, db.ForeignKey('licores.id'), nullable=True)
     cantidad         = db.Column(db.Integer, nullable=False)
     precio_unitario  = db.Column(db.Float, nullable=False)
     tipo_entrada     = db.Column(db.String(20), default='general')
@@ -228,6 +278,30 @@ def admin_required(f):
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
+
+
+# ==================== SEGURIDAD ====================
+
+@app.errorhandler(429)
+def demasiados_intentos(e):
+    flash('Demasiados intentos. Espera un minuto y vuelve a intentar.', 'danger')
+    return redirect(url_for('login'))
+
+
+@app.errorhandler(CSRFError)
+def csrf_invalido(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'success': False, 'message': 'Sesión expirada. Recarga la página.'}), 400
+    flash('Tu sesión expiró. Intenta de nuevo.', 'warning')
+    return redirect(url_for('index'))
+
+
+@app.after_request
+def no_guardar_paginas_privadas(response):
+    # Evita que el botón "atrás" muestre páginas privadas después de cerrar sesión
+    if current_user.is_authenticated and not request.path.startswith('/static'):
+        response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 # ==================== CONTEXT PROCESSORS ====================
@@ -296,6 +370,20 @@ def carrito():
         orden = Orden.query.filter_by(usuario_id=current_user.id, estado='pendiente').first()
         if orden:
             for item in orden.items:
+                # ── Licor ─────────────────────────────────────────────────────
+                if item.licor_id:
+                    subtotal = item.precio_unitario * item.cantidad
+                    items.append({
+                        'id': f'licor_{item.licor_id}', 'nombre': item.licor.nombre,
+                        'precio': item.precio_unitario, 'cantidad': item.cantidad,
+                        'imagen': item.licor.imagen, 'tipo_entrada': 'LICOR',
+                        'subtotal': subtotal, 'fecha': None,
+                        'artista': item.licor.categoria.upper(),
+                        'es_licor': True, 'es_reserva': False,
+                    })
+                    total += subtotal
+                    continue
+
                 # ── Reserva de mesa (sin evento asociado) ─────────────────────
                 if item.tipo_entrada == 'reserva' or item.evento_id is None:
                     subtotal = item.precio_unitario * item.cantidad
@@ -394,6 +482,8 @@ def agregar_carrito():
     if tipo_entrada not in TIPOS_ENTRADA:
         return jsonify({'success': False,
                         'message': f'Tipo inválido. Válidos: {", ".join(TIPOS_ENTRADA)}'}), 400
+    if not _cantidad_valida(cantidad):
+        return jsonify({'success': False, 'message': 'Cantidad inválida'}), 400
 
     evt = Evento.query.get_or_404(evento_id)
     if evt.cupos < cantidad:
@@ -442,7 +532,8 @@ def eliminar_carrito():
     """
     Elimina un ítem del carrito.
 
-    Modo A — Evento / licor:           { "evento_id": 12 }
+    Modo A — Evento:                   { "evento_id": 12 }
+    Licor:                             { "licor_id": 3 }
     Modo B — Reserva autenticada:      { "item_id": 7 }   (ItemOrden.id)
     Modo C — Reserva en sesión anónima:{ "session_key": "reserva_G-01_2026-05-20" }
     """
@@ -451,6 +542,7 @@ def eliminar_carrito():
         return jsonify({'success': False, 'message': 'Datos inválidos'}), 400
 
     evento_id   = payload.get('evento_id')
+    licor_id    = payload.get('licor_id')
     item_id     = payload.get('item_id')
     session_key = payload.get('session_key')
     eliminado   = False
@@ -460,6 +552,8 @@ def eliminar_carrito():
         if orden:
             if item_id is not None:
                 item = ItemOrden.query.filter_by(id=int(item_id), orden_id=orden.id).first()
+            elif licor_id is not None:
+                item = ItemOrden.query.filter_by(orden_id=orden.id, licor_id=int(licor_id)).first()
             elif evento_id is not None:
                 item = ItemOrden.query.filter_by(orden_id=orden.id, evento_id=int(evento_id)).first()
             else:
@@ -473,7 +567,10 @@ def eliminar_carrito():
                 eliminado = True
     else:
         cart = session.get('carrito', {})
-        key  = session_key if session_key else (str(evento_id) if evento_id is not None else None)
+        if licor_id is not None:
+            key = f'licor_{licor_id}'
+        else:
+            key = session_key if session_key else (str(evento_id) if evento_id is not None else None)
         if key and key in cart:
             cart.pop(key)
             eliminado = True
@@ -489,6 +586,9 @@ def actualizar_carrito():
     evento_id    = data.get('evento_id')
     cantidad     = data.get('cantidad')
     tipo_entrada = data.get('tipo_entrada', 'general')
+
+    if type(cantidad) is not int or cantidad > 99:
+        return jsonify({'success': False, 'message': 'Cantidad inválida'}), 400
 
     if cantidad < 1:
         # Reutiliza la lógica de eliminar enviando el mismo payload
@@ -519,6 +619,56 @@ def actualizar_carrito():
         session.modified = True
 
     return jsonify({'success': True})
+
+
+@app.route('/api/carrito/licor/agregar', methods=['POST'])
+def agregar_licor_carrito():
+    data     = request.get_json(silent=True) or {}
+    cantidad = data.get('cantidad', 1)
+
+    if not _cantidad_valida(cantidad):
+        return jsonify({'success': False, 'message': 'Cantidad inválida'}), 400
+    try:
+        licor_id = int(data.get('licor_id'))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'message': 'Licor inválido'}), 400
+
+    licor = Licor.query.filter_by(id=licor_id, disponible=True).first()
+    if not licor:
+        return jsonify({'success': False, 'message': 'Licor no disponible'}), 404
+
+    if current_user.is_authenticated:
+        orden = Orden.query.filter_by(usuario_id=current_user.id, estado='pendiente').first()
+        if not orden:
+            orden = Orden(usuario_id=current_user.id, total=0, tipo_entrada='licor')
+            db.session.add(orden)
+            db.session.flush()
+
+        item = ItemOrden.query.filter_by(orden_id=orden.id, licor_id=licor.id).first()
+        if item:
+            item.cantidad += cantidad
+        else:
+            db.session.add(ItemOrden(
+                orden_id=orden.id, licor_id=licor.id, cantidad=cantidad,
+                precio_unitario=licor.precio, tipo_entrada='licor'
+            ))
+            db.session.flush()
+
+        orden.total = sum(i.precio_unitario * i.cantidad for i in orden.items)
+        db.session.commit()
+        count = sum(i.cantidad for i in orden.items)
+    else:
+        cart = session.get('carrito', {})
+        key  = f'licor_{licor.id}'
+        if key in cart:
+            cart[key]['cantidad'] += cantidad
+        else:
+            cart[key] = {'cantidad': cantidad, 'tipo': 'licor', 'licor_id': licor.id}
+        session['carrito'] = cart
+        session.modified = True
+        count = sum(v.get('cantidad', 1) if isinstance(v, dict) else v for v in cart.values())
+
+    return jsonify({'success': True, 'cart_count': count})
 
 
 @app.route('/checkout', methods=['GET', 'POST'])
@@ -553,13 +703,15 @@ def mis_ordenes():
 # ==================== AUTH ====================
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit('5 per minute', methods=['POST'],
+               key_func=lambda: request.form.get('email', '').strip().lower() or 'sin-email')
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        email    = request.form.get('email')
-        password = request.form.get('password')
+        email    = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
         user     = Usuario.query.filter_by(email=email).first()
 
         if user and user.check_password(password):
@@ -581,7 +733,22 @@ def login():
                     else:
                         cantidad, tipo = data, 'general'
 
-                    # Ignorar reservas y licores en la migración (no tienen evento_id válido)
+                    # Licores del carrito anónimo
+                    licor_id = data.get('licor_id') if isinstance(data, dict) else None
+                    if licor_id:
+                        item = ItemOrden.query.filter_by(orden_id=orden.id, licor_id=licor_id).first()
+                        licor = Licor.query.get(licor_id)
+                        if item:
+                            item.cantidad += cantidad
+                        elif licor:
+                            db.session.add(ItemOrden(
+                                orden_id=orden.id, licor_id=licor.id, cantidad=cantidad,
+                                precio_unitario=licor.precio, tipo_entrada='licor'
+                            ))
+                            db.session.flush()
+                        continue
+
+                    # Ignorar reservas en la migración (no tienen evento_id válido)
                     if tipo in ('reserva',) or not pid.isdigit():
                         continue
 
@@ -604,7 +771,8 @@ def login():
                 session.pop('carrito', None)
 
             flash(f'Bienvenido a El Paraíso, {user.nombre}!', 'success')
-            return redirect(request.args.get('next') or url_for('index'))
+            destino = request.args.get('next')
+            return redirect(destino if _destino_seguro(destino) else url_for('index'))
 
         flash('Credenciales incorrectas.', 'danger')
 
@@ -617,10 +785,17 @@ def registro():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        nombre   = request.form.get('nombre')
-        email    = request.form.get('email')
-        password = request.form.get('password')
-        confirm  = request.form.get('confirm_password')
+        nombre   = request.form.get('nombre', '').strip()
+        email    = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        confirm  = request.form.get('confirm_password', '')
+
+        error = _validar_usuario(nombre, email)
+        if not error and len(password) < 8:
+            error = 'La contraseña debe tener mínimo 8 caracteres.'
+        if error:
+            flash(error, 'danger')
+            return redirect(url_for('registro'))
 
         if password != confirm:
             flash('Las contraseñas no coinciden.', 'danger')
@@ -640,10 +815,11 @@ def registro():
     return render_template('registro.html')
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
+    session.pop('carrito', None)
     flash('Sesión cerrada.', 'info')
     return redirect(url_for('index'))
 
@@ -749,6 +925,9 @@ def editar_licor(id):
 @admin_required
 def eliminar_licor(id):
     licor = Licor.query.get_or_404(id)
+    if licor.items:
+        flash('Este licor ya tiene ventas. Márcalo como no disponible en vez de eliminarlo.', 'warning')
+        return redirect(url_for('admin_licores'))
     db.session.delete(licor)
     db.session.commit()
     flash('Licor eliminado.', 'success')
@@ -805,6 +984,24 @@ def subir_imagen_galeria():
 
     return redirect(url_for('admin_galeria'))
 
+@app.route('/admin/galeria/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def editar_imagen_galeria(id):
+    img = ImagenGaleria.query.get_or_404(id)
+    if request.method == 'POST':
+        fecha_str     = request.form.get('fecha_evento')
+        img.titulo    = request.form.get('titulo')
+        img.categoria = request.form.get('categoria', 'general')
+        img.fecha_evento = datetime.strptime(fecha_str, '%Y-%m-%d').date() if fecha_str else None
+        img.orden     = int(request.form.get('orden', 0))
+        img.activa    = bool(request.form.get('activa'))
+        db.session.commit()
+        flash('Imagen actualizada.', 'success')
+        return redirect(url_for('admin_galeria'))
+
+    return render_template('admin/editar_imagen.html', img=img)
+
 @app.route('/admin/galeria/eliminar/<int:id>', methods=['POST'])
 @login_required
 @admin_required
@@ -832,8 +1029,12 @@ def crear_promocion():
     if request.method == 'POST':
         fecha_inicio_str = request.form.get('fecha_inicio')
         fecha_fin_str    = request.form.get('fecha_fin')
+        codigo           = request.form.get('codigo', '').upper().strip()
+        if Promocion.query.filter_by(codigo=codigo).first():
+            flash('Ya existe una promoción con ese código.', 'danger')
+            return redirect(url_for('crear_promocion'))
         db.session.add(Promocion(
-            codigo               = request.form.get('codigo').upper().strip(),
+            codigo               = codigo,
             nombre               = request.form.get('nombre'),
             descripcion          = request.form.get('descripcion'),
             descuento_porcentaje = int(request.form.get('descuento_porcentaje', 0)),
@@ -848,6 +1049,36 @@ def crear_promocion():
         return redirect(url_for('admin_promociones'))
 
     return render_template('admin/crear_promocion.html')
+
+@app.route('/admin/promociones/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def editar_promocion(id):
+    promo = Promocion.query.get_or_404(id)
+    if request.method == 'POST':
+        codigo = request.form.get('codigo', '').upper().strip()
+        otra   = Promocion.query.filter_by(codigo=codigo).first()
+        if otra and otra.id != promo.id:
+            flash('Ya existe una promoción con ese código.', 'danger')
+            return redirect(url_for('editar_promocion', id=promo.id))
+
+        fecha_inicio_str = request.form.get('fecha_inicio')
+        fecha_fin_str    = request.form.get('fecha_fin')
+        promo.codigo               = codigo
+        promo.nombre               = request.form.get('nombre')
+        promo.descripcion          = request.form.get('descripcion')
+        promo.descuento_porcentaje = int(request.form.get('descuento_porcentaje', 0))
+        promo.descuento_valor      = float(request.form.get('descuento_valor', 0))
+        promo.tipo_entrada         = request.form.get('tipo_entrada') or None
+        promo.usos_maximos         = int(request.form.get('usos_maximos', 100))
+        promo.fecha_inicio         = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date() if fecha_inicio_str else promo.fecha_inicio
+        promo.fecha_fin            = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date() if fecha_fin_str else None
+        promo.activa               = bool(request.form.get('activa'))
+        db.session.commit()
+        flash('Promoción actualizada.', 'success')
+        return redirect(url_for('admin_promociones'))
+
+    return render_template('admin/editar_promocion.html', promo=promo)
 
 @app.route('/admin/promociones/eliminar/<int:id>', methods=['POST'])
 @login_required
@@ -1009,13 +1240,18 @@ def guardar_reserva():
     if fecha < date.today():
         return jsonify({'success': False, 'message': 'La fecha no puede ser en el pasado'}), 400
 
-    precio   = float(payload.get('mesa_precio', 0))
+    # El precio y la zona salen del servidor, no de lo que envía el navegador
+    mesa = next((m for m in MESAS if m['id'] == payload['mesa_id']), None)
+    if not mesa:
+        return jsonify({'success': False, 'message': 'La mesa no existe'}), 400
+
+    precio   = mesa['precio']
     personas = max(1, int(payload.get('personas', 1)))
 
     try:
         reserva = ReservaMesa(
             mesa_id    = payload['mesa_id'],
-            mesa_zona  = payload['mesa_zona'],
+            mesa_zona  = mesa['zona'],
             mesa_precio= precio,
             fecha      = fecha,
             personas   = personas,
@@ -1057,7 +1293,7 @@ def guardar_reserva():
                 'reserva':  {
                     'id':        reserva.id,
                     'mesa_id':   payload['mesa_id'],
-                    'mesa_zona': payload['mesa_zona'],
+                    'mesa_zona': mesa['zona'],
                     'precio':    precio,
                     'fecha':     payload['fecha'],
                     'nombre':    payload['nombre'].strip(),
@@ -1097,23 +1333,9 @@ def api_mesas_disponibles():
         ).all()
     }
 
-    mesas_base = [
-        {'id': 'G-01', 'zona': 'General',    'capacidad': 4,  'precio': 0},
-        {'id': 'G-02', 'zona': 'General',    'capacidad': 4,  'precio': 0},
-        {'id': 'G-03', 'zona': 'General',    'capacidad': 6,  'precio': 0},
-        {'id': 'V-01', 'zona': 'VIP',        'capacidad': 4,  'precio': 60000},
-        {'id': 'V-02', 'zona': 'VIP',        'capacidad': 6,  'precio': 60000},
-        {'id': 'V-03', 'zona': 'VIP',        'capacidad': 4,  'precio': 60000},
-        {'id': 'P-01', 'zona': 'Palco',      'capacidad': 4,  'precio': 120000},
-        {'id': 'P-02', 'zona': 'Palco',      'capacidad': 8,  'precio': 120000},
-        {'id': 'B-01', 'zona': 'Backstage',  'capacidad': 6,  'precio': 200000},
-        {'id': 'K-01', 'zona': 'King',       'capacidad': 8,  'precio': 350000},
-        {'id': 'K-02', 'zona': 'King',       'capacidad': 10, 'precio': 350000},
-    ]
-
     mesas = [
         {**m, 'estado': 'ocupada' if m['id'] in reservadas_ids else 'disponible'}
-        for m in mesas_base
+        for m in MESAS
     ]
 
     return jsonify({'mesas': mesas, 'fecha': fecha.isoformat()})
@@ -1199,7 +1421,7 @@ def crear_evento():
             fecha_evento     = fecha,
             hora_evento      = request.form.get('hora_evento', '22:00'),
             artista          = request.form.get('artista', ''),
-            ubicacion        = request.form.get('ubicacion', 'El Paraíso - Montería'),
+            ubicacion        = request.form.get('ubicacion', UBICACION),
         ))
         db.session.commit()
         flash('Evento creado.', 'success')
@@ -1236,7 +1458,7 @@ def editar_evento(id):
         evt.fecha_evento     = fecha
         evt.hora_evento      = request.form.get('hora_evento', '22:00')
         evt.artista          = request.form.get('artista', '')
-        evt.ubicacion        = request.form.get('ubicacion', 'El Paraíso - Montería')
+        evt.ubicacion        = request.form.get('ubicacion', UBICACION)
         db.session.commit()
         flash('Evento actualizado.', 'success')
         return redirect(url_for('admin_eventos'))
@@ -1255,11 +1477,140 @@ def eliminar_evento(id):
     return redirect(url_for('admin_eventos'))
 
 
+# ==================== ADMIN: USUARIOS ====================
+
+def _guardar_usuario(usuario):
+    """Copia el formulario al usuario. Devuelve un mensaje de error o None."""
+    nombre   = request.form.get('nombre', '').strip()
+    email    = request.form.get('email', '').strip().lower()
+    password = request.form.get('password', '')
+    es_admin = bool(request.form.get('es_admin'))
+
+    error = _validar_usuario(nombre, email)
+    if error:
+        return error
+    otro = Usuario.query.filter_by(email=email).first()
+    if otro and otro.id != usuario.id:
+        return 'El email ya está registrado.'
+    if (password or usuario.id is None) and len(password) < 8:
+        return 'La contraseña debe tener mínimo 8 caracteres.'
+    if usuario.id == current_user.id and not es_admin:
+        return 'No puedes quitarte a ti mismo el rol de administrador.'
+
+    usuario.nombre   = nombre
+    usuario.email    = email
+    usuario.es_admin = es_admin
+    if password:
+        usuario.set_password(password)
+    return None
+
+
+@app.route('/admin/usuarios')
+@login_required
+@admin_required
+def admin_usuarios():
+    usuarios = Usuario.query.order_by(Usuario.creado_en.desc()).all()
+    return render_template('admin/usuarios.html', usuarios=usuarios)
+
+
+@app.route('/admin/usuarios/crear', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def crear_usuario():
+    if request.method == 'POST':
+        usuario = Usuario()
+        error   = _guardar_usuario(usuario)
+        if error:
+            flash(error, 'danger')
+            return redirect(url_for('crear_usuario'))
+        db.session.add(usuario)
+        db.session.commit()
+        flash('Usuario creado.', 'success')
+        return redirect(url_for('admin_usuarios'))
+
+    return render_template('admin/form_usuario.html', usuario=None)
+
+
+@app.route('/admin/usuarios/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def editar_usuario(id):
+    usuario = Usuario.query.get_or_404(id)
+    if request.method == 'POST':
+        error = _guardar_usuario(usuario)
+        if error:
+            flash(error, 'danger')
+            return redirect(url_for('editar_usuario', id=usuario.id))
+        db.session.commit()
+        flash('Usuario actualizado.', 'success')
+        return redirect(url_for('admin_usuarios'))
+
+    return render_template('admin/form_usuario.html', usuario=usuario)
+
+
+@app.route('/admin/usuarios/eliminar/<int:id>', methods=['POST'])
+@login_required
+@admin_required
+def eliminar_usuario(id):
+    usuario = Usuario.query.get_or_404(id)
+    if usuario.id == current_user.id:
+        flash('No puedes eliminar tu propia cuenta.', 'danger')
+    elif usuario.ordenes or ReservaMesa.query.filter_by(usuario_id=usuario.id).first():
+        flash('Este usuario tiene órdenes o reservas, no se puede eliminar.', 'warning')
+    else:
+        db.session.delete(usuario)
+        db.session.commit()
+        flash('Usuario eliminado.', 'success')
+    return redirect(url_for('admin_usuarios'))
+
+
+# ==================== ADMIN: RESERVAS ====================
+
+@app.route('/admin/reservas')
+@login_required
+@admin_required
+def admin_reservas():
+    reservas_list = ReservaMesa.query.order_by(ReservaMesa.fecha.desc()).all()
+    return render_template('admin/reservas.html', reservas=reservas_list)
+
+
+@app.route('/admin/reservas/estado/<int:id>', methods=['POST'])
+@login_required
+@admin_required
+def cambiar_estado_reserva(id):
+    reserva = ReservaMesa.query.get_or_404(id)
+    estado  = request.form.get('estado')
+    if estado in ESTADOS_RESERVA:
+        reserva.estado = estado
+        db.session.commit()
+        flash('Reserva actualizada.', 'success')
+    else:
+        flash('Estado inválido.', 'danger')
+    return redirect(url_for('admin_reservas'))
+
+
+@app.route('/admin/reservas/eliminar/<int:id>', methods=['POST'])
+@login_required
+@admin_required
+def eliminar_reserva(id):
+    reserva = ReservaMesa.query.get_or_404(id)
+    db.session.delete(reserva)
+    db.session.commit()
+    flash('Reserva eliminada.', 'success')
+    return redirect(url_for('admin_reservas'))
+
+
 # ==================== INICIALIZACIÓN ====================
 
 def init_db():
     with app.app_context():
         db.create_all()
+
+        # Agrega licor_id si la tabla se creó antes de esta versión
+        columnas = [c['name'] for c in db.inspect(db.engine).get_columns('items_orden')]
+        if 'licor_id' not in columnas:
+            db.session.execute(db.text('ALTER TABLE items_orden ADD COLUMN licor_id INTEGER REFERENCES licores(id)'))
+            db.session.commit()
 
         if not GeneroMusical.query.first():
             db.session.add_all([
@@ -1280,37 +1631,88 @@ def init_db():
         if not Evento.query.first():
             from datetime import timedelta
             hoy = date.today()
+            # Basados en lo que publica la discoteca en Facebook.
+            # Fechas y precios son de ejemplo: se ajustan en /admin/eventos.
+            noche = 'https://images.unsplash.com/photo-1740572569816-9c437c4b9c4d?q=80&w=1170&auto=format&fit=crop'
+            club  = 'https://images.unsplash.com/photo-1647314620432-7e27193891cb?q=80&w=1169&auto=format&fit=crop'
             db.session.add_all([
-                Evento(nombre='Noche de Crossover',
-                       descripcion='La mejor noche de salsa, vallenato y merengue de Montería. Con DJ Pipe y la orquesta Costa Brava en vivo.',
-                       precio_general=30000, precio_vip=60000, precio_palco=120000, precio_backstage=200000, precio_king=350000,
-                       cupos=500, genero_id=1, imagen='https://images.unsplash.com/photo-1740572569816-9c437c4b9c4d?q=80&w=1170&auto=format&fit=crop',
-                       destacado=True, fecha_evento=hoy+timedelta(days=5), hora_evento='22:00', artista='DJ Pipe & Costa Brava', ubicacion='El Paraíso - Montería'),
-                Evento(nombre='Reggaetón Night',
-                       descripcion='Lo más candente del género urbano. Bad Bunny, Feid, Karol G y más en una noche inolvidable.',
-                       precio_general=35000, precio_vip=70000, precio_palco=140000, precio_backstage=220000, precio_king=380000,
-                       cupos=600, genero_id=2, imagen='https://zumbido.cl/wp-content/uploads/2024/08/J-Alvarez-2.jpg',
-                       destacado=True, fecha_evento=hoy+timedelta(days=12), hora_evento='23:00', artista='DJ Urbano & MC Karibe', ubicacion='El Paraíso - Montería'),
-                Evento(nombre='Electro Paradise',
-                       descripcion='Noche de electrónica con los mejores DJs de la región. Luces láser, efectos especiales y mucha energía.',
-                       precio_general=40000, precio_vip=80000, precio_palco=150000, precio_backstage=250000, precio_king=400000,
-                       cupos=400, genero_id=3, imagen='https://tse2.mm.bing.net/th/id/OIP.0iJTnYNpez6CU0wWfeBKvAHaE7?r=0&rs=1&pid=ImgDetMain',
-                       destacado=True, fecha_evento=hoy+timedelta(days=19), hora_evento='23:30', artista='DJ Neon & Laser Crew', ubicacion='El Paraíso - Montería'),
-                Evento(nombre='Dembow Explosion',
-                       descripcion='El ritmo del momento. Una noche llena de perreo intenso y los mejores éxitos del dembow colombiano.',
-                       precio_general=25000, precio_vip=50000, precio_palco=100000, precio_backstage=180000, precio_king=320000,
-                       cupos=700, genero_id=4, imagen='https://tse1.mm.bing.net/th/id/OIP.zLPUwqKqg7n86YpRZ8WsJAHaFv?r=0&rs=1&pid=ImgDetMain',
-                       destacado=False, fecha_evento=hoy+timedelta(days=8), hora_evento='22:30', artista='DJ Dembow & La Banda', ubicacion='El Paraíso - Montería'),
-                Evento(nombre='Champeta Classics',
-                       descripcion='El sonido autóctono de la Costa Caribe. Una noche para bailar champeta hasta el amanecer.',
+                Evento(nombre='Éxitos de la Champeta',
+                       descripcion='Disfruta una noche de éxitos de la champeta en Paraíso Club.',
                        precio_general=20000, precio_vip=45000, precio_palco=90000, precio_backstage=160000, precio_king=280000,
-                       cupos=800, genero_id=5, imagen='https://tse4.mm.bing.net/th/id/OIP.L-dzQVOagzvJ8hkqLl0Q8gHaE8?r=0&rs=1&pid=ImgDetMain',
-                       destacado=False, fecha_evento=hoy+timedelta(days=15), hora_evento='21:00', artista='Grupo Niche Champetero', ubicacion='El Paraíso - Montería'),
-                Evento(nombre='VIP Experience',
-                       descripcion='Noche exclusiva con open bar, servicio personalizado y las mejores vistas del club.',
-                       precio_general=50000, precio_vip=100000, precio_palco=180000, precio_backstage=300000, precio_king=450000,
-                       cupos=300, genero_id=2, imagen='https://images.unsplash.com/photo-1647314620432-7e27193891cb?q=80&w=1169&auto=format&fit=crop',
-                       destacado=True, fecha_evento=hoy+timedelta(days=26), hora_evento='22:00', artista='Artista Sorpresa', ubicacion='El Paraíso - Montería'),
+                       cupos=300, genero_id=5, imagen=noche,
+                       destacado=True, fecha_evento=hoy+timedelta(days=5), hora_evento='21:00', artista='Paraíso Club', ubicacion=UBICACION),
+                Evento(nombre='Noche de Locura',
+                       descripcion='Llega que sí es para eso: rumba toda la noche en Paraíso Club.',
+                       precio_general=30000, precio_vip=60000, precio_palco=120000, precio_backstage=200000, precio_king=350000,
+                       cupos=300, genero_id=1, imagen=club,
+                       destacado=True, fecha_evento=hoy+timedelta(days=8), hora_evento='22:00', artista='Paraíso Club', ubicacion=UBICACION),
+                Evento(nombre='El Clásico Español en Pantalla Gigante',
+                       descripcion='Vive el clásico español en pantalla gigante en Paraíso Club.',
+                       precio_general=20000, precio_vip=45000, precio_palco=90000, precio_backstage=160000, precio_king=280000,
+                       cupos=300, genero_id=1, imagen=club,
+                       destacado=True, fecha_evento=hoy+timedelta(days=12), hora_evento='14:00', artista='Pantalla gigante', ubicacion=UBICACION),
+                Evento(nombre='Selección Colombia en Pantalla Gigante',
+                       descripcion='Vamos todos, apoyemos a la Selección Colombia. Te esperamos en Paraíso Club Montería.',
+                       precio_general=20000, precio_vip=45000, precio_palco=90000, precio_backstage=160000, precio_king=280000,
+                       cupos=300, genero_id=1, imagen=noche,
+                       destacado=True, fecha_evento=hoy+timedelta(days=19), hora_evento='18:00', artista='Pantalla gigante', ubicacion=UBICACION),
+            ])
+            db.session.commit()
+
+        if not Licor.query.first():
+            # Precios y fotos de licoresmedellin.com, consultados el 2026-11-09.
+            db.session.add_all([
+                Licor(nombre='Aguardiente Antioqueño Tapa Verde 750 ml', categoria='aguardiente', precio=53900,
+                      descripcion='Aguardiente colombiano de la Fábrica de Licores de Antioquia, el más vendido del país.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/AGUARDIENTE_ANTIOQUENO_TAPA_VERDE_BOTELLA_750ML.jpg?v=1793051613'),
+                Licor(nombre='Aguardiente Antioqueño Tapa Azul 750 ml', categoria='aguardiente', precio=55900,
+                      descripcion='Versión sin azúcar del aguardiente de la Fábrica de Licores de Antioquia.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/aguardiente-antioqueno-tapa-azul-botella-750mlaguardiente-antioqueno-tapa-azul-botella-750mlaguardiente-antioquenolicores-medellin-2388907.jpg?v=1759123399'),
+                Licor(nombre='Aguardiente Amarillo de Manzanares 750 ml', categoria='aguardiente', precio=57900,
+                      descripcion='Aguardiente de la Industria Licorera de Caldas.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/aguardiente-amarillo-de-manzanares-botella-750mlaguardiente-amarillo-de-manzanares-botella-750mlindustria-licorera-de-caldaslicores-medellin-7021712.jpg?v=1765494233'),
+                Licor(nombre='Ron Medellín 3 Años Añejo 750 ml', categoria='ron', precio=56900,
+                      descripcion='Ron añejo colombiano de la Fábrica de Licores de Antioquia.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-medellin-3-anos-anejo-botella-750mlron-medellin-3-anos-anejo-botella-750mlron-medellinlicores-medellin-8660657.jpg?v=1759123251'),
+                Licor(nombre='Ron Viejo de Caldas 3 Años Tradicional 750 ml', categoria='ron', precio=58900,
+                      descripcion='Ron colombiano de la Industria Licorera de Caldas.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-viejo-de-caldas-3-anos-tradicional-botella-750mlron-viejo-de-caldas-3-anos-tradicional-botella-750mlron-viejo-de-caldaslicores-medellin-1250736.jpg?v=1759123369'),
+                Licor(nombre='Ron Viejo de Caldas 8 Años Carta de Oro 750 ml', categoria='ron', precio=102900,
+                      descripcion='Ron colombiano añejado 8 años, de la Industria Licorera de Caldas.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/ron-viejo-de-caldas-8-anos-carta-de-oro-botella-750mlron-viejo-de-caldas-8-anos-carta-de-oro-botella-750mlron-viejo-de-caldaslicores-medellin-8336735.jpg?v=1759123370'),
+                Licor(nombre='Whisky Old Parr 12 Años 750 ml', categoria='whiskey', precio=159000,
+                      descripcion='Whisky escocés de mezcla, añejado 12 años.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-old-parr-12-anos-botella-750mlwhisky-old-parr-12-anos-botella-750mlold-parrlicores-medellin-1357166.jpg?v=1759122553'),
+                Licor(nombre="Whisky Buchanan's Deluxe 12 Años 750 ml", categoria='whiskey', precio=185900,
+                      descripcion='Whisky escocés de mezcla, añejado 12 años.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-buchanans-deluxe-12-anos-botella-750mlwhisky-buchanans-deluxe-12-anos-botella-750mlbuchananslicores-medellin-2276071.jpg?v=1765490172'),
+                Licor(nombre="Whisky Buchanan's Master 750 ml", categoria='whiskey', precio=217900,
+                      descripcion="Whisky escocés de mezcla de la casa Buchanan's.",
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-buchanans-master-botella-750mlwhisky-buchanans-master-botella-750mlbuchananslicores-medellin-3145715.jpg?v=1759122553'),
+                Licor(nombre='Whisky Johnnie Walker Red Label 700 ml', categoria='whiskey', precio=79900,
+                      descripcion='Whisky escocés de mezcla.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/whisky-johnnie-walker-red-label-botella-700mlwhisky-johnnie-walker-red-label-botella-700mljohnnie-walkerlicores-medellin-9011566.jpg?v=1759122553'),
+                Licor(nombre='Whisky Johnnie Walker Black Label 700 ml', categoria='whiskey', precio=172900,
+                      descripcion='Whisky escocés de mezcla, añejado 12 años.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/WHISKY_JOHNNIE_WALKER_BLACK_LABEL_BOTELLA_700ML.jpg?v=1764364351'),
+                Licor(nombre='Vodka Absolut 700 ml', categoria='vodka', precio=93000,
+                      descripcion='Vodka sueco.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/vodka-absolut-botella-700mlvodka-absolut-botella-700mlabsolut-vodkalicores-medellin-2766595.jpg?v=1759122630'),
+                Licor(nombre='Vodka Smirnoff N° 21 700 ml', categoria='vodka', precio=111000,
+                      descripcion='Vodka clásico de la marca Smirnoff.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/vodka-smirnoff-botella-700mlvodka-smirnoff-botella-700mlsmirnofflicores-medellin-2446150.jpg?v=1759122630'),
+                Licor(nombre='Tequila José Cuervo Especial Reposado 750 ml', categoria='tequila', precio=98900,
+                      descripcion='Tequila mexicano reposado.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-jose-cuervo-especial-reposado-botella-750mltequila-jose-cuervo-especial-reposado-botella-750mljose-cuervolicores-medellin-5501636.jpg?v=1776272385'),
+                Licor(nombre='Tequila José Cuervo Especial Silver 750 ml', categoria='tequila', precio=98900,
+                      descripcion='Tequila mexicano plateado.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-jose-cuervo-especial-silver-botella-750mltequila-jose-cuervo-especial-silver-botella-750mljose-cuervolicores-medellin-2367928.jpg?v=1759123228'),
+                Licor(nombre='Tequila Don Julio Blanco 700 ml', categoria='tequila', precio=271900,
+                      descripcion='Tequila mexicano blanco.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/tequila-don-julio-blanco-botella-700mltequila-don-julio-blanco-botella-700mltequila-don-juliolicores-medellin-3471506.jpg?v=1764878992'),
+                Licor(nombre='Champagne Moët & Chandon Brut 750 ml', categoria='champagne', precio=563900,
+                      descripcion='Champagne francés brut.',
+                      imagen='https://cdn.shopify.com/s/files/1/0602/6376/0011/files/champagne-moet-chandon-brut-botella-750mlchampagne-moet-chandon-brut-botella-750mlmoet-hennessylicores-medellin-2709495.jpg?v=1759122554'),
             ])
             db.session.commit()
 

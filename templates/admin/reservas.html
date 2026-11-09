@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservas — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">Reservas de Mesa</h1>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Mesa</th>
+                        <th>Personas</th>
+                        <th>Cliente</th>
+                        <th>Contacto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservas %}
+                    <tr>
+                        <td>{{ r.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td><strong style="color: var(--text-primary);">{{ r.mesa_id }}</strong> {{ r.mesa_zona }}</td>
+                        <td>{{ r.personas }}</td>
+                        <td>{{ r.nombre }}</td>
+                        <td>{{ r.telefono }}<br>{{ r.email }}</td>
+                        <td>
+                            {% if r.estado == 'confirmada' %}<span class="badge badge-pagado">Confirmada</span>
+                            {% elif r.estado == 'cancelada' %}<span class="badge badge-cancelado">Cancelada</span>
+                            {% else %}<span class="badge badge-pendiente">Pendiente</span>{% endif %}
+                        </td>
+                        <td>
+                            <div class="admin-actions-cell">
+                                {% if r.estado != 'confirmada' %}
+                                <form method="POST" action="{{ url_for('cambiar_estado_reserva', id=r.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="estado" value="confirmada">
+                                    <button type="submit" class="btn-sm btn-edit">Confirmar</button>
+                                </form>
+                                {% endif %}
+                                {% if r.estado != 'cancelada' %}
+                                <form method="POST" action="{{ url_for('cambiar_estado_reserva', id=r.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="estado" value="cancelada">
+                                    <button type="submit" class="btn-sm btn-delete">Cancelar</button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('eliminar_reserva', id=r.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar esta reserva?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-sm btn-delete">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not reservas %}
+        <div class="cart-empty" style="padding: 80px 0;">
+            <p style="color: var(--text-muted);">Todavía no hay reservas.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

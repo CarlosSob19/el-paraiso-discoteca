@@ -9,6 +9,7 @@
             <h1 class="checkout-title">Confirmar compra</h1>
 
             <form method="POST" action="{{ url_for('checkout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-section">
                     <h3>Datos del comprador</h3>
                     <div class="form-row">
@@ -117,7 +118,7 @@
             <h3>Tu orden</h3>
             {% for item in orden.items %}
             <div class="checkout-item">
-                <span>{{ item.evento.nombre }} ({{ item.tipo_entrada|upper }}) x{{ item.cantidad }}</span>
+                <span>{% if item.licor %}{{ item.licor.nombre }}{% elif item.evento_id is none %}Reserva{% else %}{{ item.evento.nombre }}{% endif %} ({{ item.tipo_entrada|upper }}) x{{ item.cantidad }}</span>
                 <span>${{ "%.0f"|format(item.precio_unitario * item.cantidad) }}</span>
             </div>
             {% endfor %}

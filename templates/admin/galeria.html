@@ -13,6 +13,7 @@
         <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-bottom: 48px;">
             <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; margin-bottom: 24px; letter-spacing: 0.05em;">Subir nueva imagen</h3>
             <form method="POST" action="{{ url_for('subir_imagen_galeria') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: end;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label>Título</label>
@@ -60,8 +61,10 @@
                 <div class="admin-gallery-item-overlay">
                     <div class="admin-gallery-item-title">{{ img.titulo }}</div>
                     <div class="admin-gallery-item-cat">{{ img.categoria }} • {{ img.fecha_evento.strftime('%d/%m/%Y') if img.fecha_evento else 'Sin fecha' }}</div>
+                    <a href="{{ url_for('editar_imagen_galeria', id=img.id) }}" class="btn-sm btn-edit" style="align-self: flex-start; margin-top: 8px;">Editar</a>
                 </div>
                 <form method="POST" action="{{ url_for('eliminar_imagen_galeria', id=img.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar esta imagen?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="admin-gallery-delete">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 6L6 18M6 6l12 12"/>

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ 'Editar' if usuario else 'Crear' }} Usuario — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">{{ 'Editar' if usuario else 'Crear' }} Usuario</h1>
+        <form method="POST" style="max-width: 600px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label>Nombre *</label>
+                <input type="text" name="nombre" value="{{ usuario.nombre if usuario else '' }}" required maxlength="100">
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" value="{{ usuario.email if usuario else '' }}" required maxlength="120">
+            </div>
+            <div class="form-group">
+                <label>Contraseña {% if usuario %}(déjala vacía para no cambiarla){% else %}*{% endif %}</label>
+                <input type="password" name="password" minlength="8" placeholder="Mínimo 8 caracteres" {% if not usuario %}required{% endif %}>
+            </div>
+            <div class="checkbox-group" style="margin-bottom: 24px;">
+                <label>
+                    <input type="checkbox" name="es_admin" value="1" {% if usuario and usuario.es_admin %}checked{% endif %}>
+                    <span style="color: var(--text-secondary);">Administrador</span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar</button>
+                <a href="{{ url_for('admin_usuarios') }}" class="btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

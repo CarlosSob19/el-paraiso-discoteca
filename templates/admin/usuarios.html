@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">Usuarios</h1>
+            <a href="{{ url_for('crear_usuario') }}" class="btn-primary" style="width: auto; padding: 12px 24px;">+ Nuevo usuario</a>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td><strong style="color: var(--text-primary);">{{ u.nombre }}</strong></td>
+                        <td>{{ u.email }}</td>
+                        <td>{% if u.es_admin %}<span class="badge badge-pagado">Admin</span>{% else %}<span class="badge badge-pendiente">Cliente</span>{% endif %}</td>
+                        <td>{{ u.creado_en.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <div class="admin-actions-cell">
+                                <a href="{{ url_for('editar_usuario', id=u.id) }}" class="btn-sm btn-edit">Editar</a>
+                                <form method="POST" action="{{ url_for('eliminar_usuario', id=u.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar este usuario?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-sm btn-delete">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

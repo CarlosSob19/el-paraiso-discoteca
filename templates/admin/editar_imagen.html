@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Imagen — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Editar Imagen</h1>
+        <form method="POST" action="{{ url_for('editar_imagen_galeria', id=img.id) }}" style="max-width: 600px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <img src="{{ img.imagen_url }}" alt="{{ img.titulo }}" style="width: 200px; border-radius: 8px; margin-bottom: 24px; display: block;">
+            <div class="form-group">
+                <label>Título *</label>
+                <input type="text" name="titulo" value="{{ img.titulo }}" required maxlength="100">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select name="categoria">
+                        <option value="crossover" {% if img.categoria == 'crossover' %}selected{% endif %}>Crossover</option>
+                        <option value="reggaeton" {% if img.categoria == 'reggaeton' %}selected{% endif %}>Reggaetón</option>
+                        <option value="electronica" {% if img.categoria == 'electronica' %}selected{% endif %}>Electrónica</option>
+                        <option value="dembow" {% if img.categoria == 'dembow' %}selected{% endif %}>Dembow</option>
+                        <option value="champeta" {% if img.categoria == 'champeta' %}selected{% endif %}>Champeta</option>
+                        <option value="general" {% if img.categoria == 'general' %}selected{% endif %}>General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha del evento</label>
+                    <input type="date" name="fecha_evento" value="{{ img.fecha_evento.strftime('%Y-%m-%d') if img.fecha_evento else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Orden</label>
+                    <input type="number" name="orden" value="{{ img.orden }}" min="0">
+                </div>
+            </div>
+            <div class="checkbox-group" style="margin-bottom: 24px;">
+                <label>
+                    <input type="checkbox" name="activa" value="1" {% if img.activa %}checked{% endif %}>
+                    <span style="color: var(--text-secondary);">Visible en la galería</span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar cambios</button>
+                <a href="{{ url_for('admin_galeria') }}" class="btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

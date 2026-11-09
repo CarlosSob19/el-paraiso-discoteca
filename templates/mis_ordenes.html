@@ -28,7 +28,7 @@
                     {% for item in orden.items %}
                     <div style="display: flex; justify-content: space-between; padding: 8px 0; color: var(--text-secondary); font-size: 0.9375rem;">
                         <span>
-                            {% if item.evento_id is none %}Reserva{% elif item.evento_id < 0 %}Licor{% else %}{{ item.evento.nombre }}{% endif %}
+                            {% if item.licor %}{{ item.licor.nombre }}{% elif item.evento_id is none %}Reserva{% else %}{{ item.evento.nombre }}{% endif %}
                             ({{ item.tipo_entrada|upper }}) x{{ item.cantidad }}
                         </span>
                         <span>${{ "%.0f"|format(item.precio_unitario * item.cantidad) }}</span>

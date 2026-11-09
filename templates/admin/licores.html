@@ -34,6 +34,7 @@
                             <div class="admin-actions-cell">
                                 <a href="{{ url_for('editar_licor', id=l.id) }}" class="btn-sm btn-edit">Editar</a>
                                 <form method="POST" action="{{ url_for('eliminar_licor', id=l.id) }}" style="display: inline;" onsubmit="return confirm('¿Eliminar este licor?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn-sm btn-delete">Eliminar</button>
                                 </form>
                             </div>

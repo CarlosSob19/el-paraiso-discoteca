@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Promoción — Admin El Paraíso{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <h1 class="admin-title">Editar Promoción</h1>
+
+        <form method="POST" action="{{ url_for('editar_promocion', id=promo.id) }}" style="max-width: 700px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Código *</label>
+                    <input type="text" name="codigo" value="{{ promo.codigo }}" required maxlength="20" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="nombre" value="{{ promo.nombre }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" rows="3">{{ promo.descripcion or '' }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Descuento %</label>
+                    <input type="number" name="descuento_porcentaje" value="{{ promo.descuento_porcentaje }}" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Descuento valor fijo ($)</label>
+                    <input type="number" name="descuento_valor" value="{{ "%.0f"|format(promo.descuento_valor) }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de entrada</label>
+                    <select name="tipo_entrada">
+                        <option value="">Todas</option>
+                        <option value="general" {% if promo.tipo_entrada == 'general' %}selected{% endif %}>General</option>
+                        <option value="vip" {% if promo.tipo_entrada == 'vip' %}selected{% endif %}>VIP</option>
+                        <option value="palco" {% if promo.tipo_entrada == 'palco' %}selected{% endif %}>Palco</option>
+                        <option value="backstage" {% if promo.tipo_entrada == 'backstage' %}selected{% endif %}>Backstage</option>
+                        <option value="king" {% if promo.tipo_entrada == 'king' %}selected{% endif %}>King</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Usos máximos</label>
+                    <input type="number" name="usos_maximos" value="{{ promo.usos_maximos }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Fecha inicio</label>
+                    <input type="date" name="fecha_inicio" value="{{ promo.fecha_inicio.strftime('%Y-%m-%d') if promo.fecha_inicio else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Fecha fin</label>
+                    <input type="date" name="fecha_fin" value="{{ promo.fecha_fin.strftime('%Y-%m-%d') if promo.fecha_fin else '' }}">
+                </div>
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom: 24px;">
+                <label>
+                    <input type="checkbox" name="activa" value="1" {% if promo.activa %}checked{% endif %}>
+                    <span style="color: var(--text-secondary);">Activa</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar cambios</button>
+                <a href="{{ url_for('admin_promociones') }}" class="btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
